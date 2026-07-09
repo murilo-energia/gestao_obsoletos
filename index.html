@@ -17,6 +17,25 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#EEF0F4;color:var(--dk);min-height:100vh}
 
+/* ── MODAL / LOGIN ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(5px);z-index:800;display:flex;align-items:center;justify-content:center}
+.mbox{background:var(--wh);border-radius:14px;padding:36px 40px;width:390px;box-shadow:0 20px 60px rgba(0,0,0,.22);position:relative}
+.mlogo{display:block;margin:0 auto 18px;height:36px;object-fit:contain}
+.mtit{font-size:17px;font-weight:700;color:var(--dk);text-align:center;margin-bottom:3px}
+.msub{font-size:12px;color:var(--g4);text-align:center;margin-bottom:22px}
+.flbl{font-size:11px;font-weight:600;color:var(--g5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.fwrap{position:relative;margin-bottom:14px}
+.finp{width:100%;height:40px;padding:0 36px 0 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--dk);background:var(--g1);outline:none;transition:border .14s}
+.finp:focus{border-color:var(--og);background:var(--wh)}
+.feye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.45;user-select:none}
+.feye:hover{opacity:.85}
+.ferr{font-size:11px;color:var(--rd);margin-top:-8px;margin-bottom:10px;display:none}
+.mbtn{width:100%;height:42px;border:none;border-radius:var(--rs);background:var(--og);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:background .14s;margin-top:4px}
+.mbtn:hover{background:var(--ogl)}
+.mfoot{text-align:center;font-size:11px;color:var(--g4);margin-top:14px}
+.shake{animation:shk .35s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
 /* ── LOADING ── */
 #loading{position:fixed;inset:0;background:var(--dk2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:700;gap:16px}
 #loading img{height:40px;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
@@ -93,11 +112,6 @@ select.fs:focus{border-color:var(--og)}
 .prb{flex:1;height:6px;background:var(--g2);border-radius:3px;overflow:hidden;min-width:30px}
 .prf{height:6px;border-radius:3px}
 .prv{font-size:11px;color:var(--g5);flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.prw{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.prl{font-size:12px;color:var(--dk);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.prb{flex:1;height:6px;background:var(--g2);border-radius:3px;overflow:hidden;min-width:30px}
-.prf{height:6px;border-radius:3px}
-.prv{font-size:11px;color:var(--g5);flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .prp{font-size:11px;color:var(--og);flex:0 0 34px;text-align:right;font-weight:700}
 
 /* ── ALERT ── */
@@ -130,7 +144,27 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 </head>
 <body>
 
-<div id="loading">
+<div class="overlay" id="login-screen">
+  <div class="mbox">
+    <img class="mlogo" src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
+    <div class="mtit">Estoque de Obsoletos</div>
+    <div class="msub">Use as credenciais autorizadas pela empresa</div>
+    <div class="flbl">Usuário</div>
+    <div class="fwrap">
+      <input class="finp" type="text" id="luser" placeholder="Digite seu usuário" style="padding:0 12px">
+    </div>
+    <div class="flbl">Senha de acesso</div>
+    <div class="fwrap">
+      <input class="finp" type="password" id="lpwd" placeholder="••••••••">
+      <span class="feye" onclick="eye('lpwd',this)">👁</span>
+    </div>
+    <div class="ferr" id="lerr">Usuário ou senha incorretos.</div>
+    <button class="mbtn" onclick="doLogin()">Entrar</button>
+    <div class="mfoot">Grupo Energia · Uso interno confidencial</div>
+  </div>
+</div>
+
+<div id="loading" style="display:none">
   <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
   <div class="spin"></div>
   <div class="ltxt" id="ltxt">Conectando à planilha...</div>
@@ -148,12 +182,13 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="sbs">Navegação</div>
     <div class="ni on" data-pg="visao">📊 Visão Geral</div>
     <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
-    <div class="sbs" style="margin-top:4px">Dados</div>
-    <div class="ni" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
+    <div class="sbs admin-only" style="margin-top:4px">Dados</div>
+    <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
   </div>
   <div class="sb-foot">
     Painel interno <b>Grupo Energia</b><br>Uso confidencial
     <div class="author">✍️ Elaborado por:<br><span>Murilo Henrique Roberto</span></div>
+    <div id="role-badge" style="margin-top:8px;padding-top:7px;border-top:1px solid var(--dk3);font-size:11px;font-weight:600"></div>
   </div>
 </nav>
 
@@ -219,18 +254,70 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 // ══════════════════════════════════════════
 //  CONFIGURAÇÃO
 // ══════════════════════════════════════════
-// ID do link publicado
 const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
-
-// Aba "ESTOQUE OBSOLETOS" — gid=0
 const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
-
-// Aba "SALDO ESTOQUE" — gid atualizado com a informação fornecida
 const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
-
-// Link de edição da planilha
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
-function openSheet(){ window.open(SHEET_URL, '_blank'); }
+
+// Credenciais fixas de autenticação
+const AUTH_ADMIN_USER = 'admin';
+const AUTH_ADMIN_PWD  = 'admin@energia';
+const AUTH_VIEW_USER  = 'viewer';
+const AUTH_VIEW_PWD   = 'energia2025';
+
+let currentRole = null;
+
+// ── AUTHENTICATION ────────────────────────
+function doLogin(){
+  const user = document.getElementById('luser').value.trim();
+  const pwd  = document.getElementById('lpwd').value;
+  
+  if(user === AUTH_ADMIN_USER && pwd === AUTH_ADMIN_PWD){
+    currentRole = 'admin';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading').style.display = 'flex';
+    applyRole();
+    loadData();
+  } else if(user === AUTH_VIEW_USER && pwd === AUTH_VIEW_PWD){
+    currentRole = 'viewer';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading').style.display = 'flex';
+    applyRole();
+    loadData();
+  } else {
+    document.getElementById('lerr').style.display = 'block';
+    const b = document.querySelector('#login-screen .mbox');
+    b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+    document.getElementById('lpwd').value = '';
+  }
+}
+
+function applyRole(){
+  const isAdmin = currentRole === 'admin';
+  document.querySelectorAll('.admin-only').forEach(el=>{
+    el.style.display = isAdmin ? '' : 'none';
+  });
+  const badge = document.getElementById('role-badge');
+  if(badge){
+    badge.textContent = isAdmin ? '👑 Administrador' : '👤 Visualizador';
+    badge.style.color = isAdmin ? 'var(--og)' : 'var(--gn)';
+  }
+}
+
+function eye(id, el){
+  const i = document.getElementById(id);
+  i.type = i.type==='password' ? 'text' : 'password';
+  el.textContent = i.type==='password' ? '👁' : '🙈';
+}
+
+document.getElementById('lpwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('luser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function openSheet(){ 
+  if (currentRole === 'admin') {
+    window.open(SHEET_URL, '_blank'); 
+  }
+}
 
 // ══════════════════════════════════════════
 //  DADOS
@@ -550,7 +637,6 @@ function renderTbl(data){
   updH();
 }
 
-// ── INITIALIZATION ────────────────────────
 function ftbl(q){
   const lq=q.toLowerCase();
   renderTbl(FILT.filter(r=>
@@ -562,9 +648,6 @@ function updH(){
   document.querySelectorAll('#pg-itens thead th').forEach(t=>t.classList.remove('sa','sd'));
   const idx=km[sk]; if(idx!=null){ const t=document.querySelectorAll('#pg-itens thead th')[idx]; if(t)t.classList.add(sd===1?'sa':'sd'); }
 }
-
-// ── INIT ──────────────────────────────────
-loadData();
 </script>
 </body>
 </html>
