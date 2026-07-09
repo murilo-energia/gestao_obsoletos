@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Grupo Energia — Estoque Obsoletos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --og:#E8511A;--ogl:#FF6B35;--ogp:#FFF0EA;--ogd:rgba(232,81,26,.13);
+  --dk:#1E1E1E;--dk2:#2D2D2D;--dk3:#3A3A3A;
+  --g1:#F5F5F5;--g2:#E8E8E8;--g3:#C8C8C8;--g4:#888;--g5:#555;
+  --wh:#fff;--bl:#1A5FA8;--gn:#2EA86B;--am:#D4830A;--rd:#D43A3A;
+  --sw:220px;--hh:60px;--rad:10px;--rs:6px;
+  font-family:'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EEF0F4;color:var(--dk);min-height:100vh}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:var(--dk2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:700;gap:16px}
+#loading img{height:40px;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
+.spin{width:32px;height:32px;border:3px solid rgba(232,81,26,.2);border-top-color:var(--og);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ltxt{color:var(--g3);font-size:13px}
+.lerr{color:#ff8080;font-size:12px;text-align:center;max-width:340px;line-height:1.6;display:none;padding:0 20px}
+.lbtn{padding:8px 22px;background:var(--og);color:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:13px;display:none;font-weight:500;margin-top:4px}
+.lbtn:hover{background:var(--ogl)}
+
+/* ── SIDEBAR ── */
+#sb{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--dk2);display:flex;flex-direction:column;z-index:100;border-right:1px solid var(--dk3)}
+.sb-logo{padding:15px 20px 11px;border-bottom:1px solid var(--dk3)}
+.sb-logo img{height:30px;object-fit:contain;filter:brightness(0) invert(1)}
+.sb-info{padding:8px 20px 6px;font-size:11px;color:var(--g3);border-bottom:1px solid var(--dk3);line-height:1.7}
+.sb-info b{color:var(--og)}
+.upd{font-size:10px;color:var(--g4);display:flex;align-items:center;gap:5px;margin-top:2px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--gn);animation:pulse 2s infinite}
+.dot-err{background:var(--rd)!important;animation:none!important}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sb-nav{padding:8px 0;flex:1;overflow-y:auto}
+.sbs{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--g4);padding:10px 20px 4px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 20px;font-size:13px;color:var(--g3);cursor:pointer;border-left:3px solid transparent;user-select:none;transition:background .12s,color .12s}
+.ni:hover{background:var(--dk3);color:var(--wh)}
+.ni.on{background:var(--ogd);color:var(--og);border-left-color:var(--og);font-weight:600}
+.sb-foot{padding:11px 20px;border-top:1px solid var(--dk3);font-size:11px;color:var(--g4);line-height:1.8}
+.sb-foot b{color:var(--og)}
+.author{margin-top:6px;padding-top:6px;border-top:1px solid var(--dk3);font-size:10px;color:var(--g4)}
+.author span{color:#FF9466;font-weight:600}
+.sb-gear{display:flex;align-items:center;gap:7px;padding:8px 20px;font-size:12px;color:var(--g4);cursor:pointer;border-top:1px solid var(--dk3);transition:color .12s;user-select:none}
+.sb-gear:hover{color:var(--og)}
+
+/* ── TOPBAR ── */
+#main{margin-left:var(--sw);display:flex;flex-direction:column;min-height:100vh}
+#topbar{position:sticky;top:0;z-index:50;background:var(--wh);border-bottom:1px solid var(--g2);height:var(--hh);display:flex;align-items:center;padding:0 22px;gap:10px;justify-content:space-between}
+.tb-l .ttl{font-size:15px;font-weight:600;color:var(--dk)}
+.tb-l .tsub{font-size:11px;color:var(--g4);margin-top:1px}
+.frow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+select.fs{height:31px;padding:0 7px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:12px;background:var(--g1);cursor:pointer;outline:none;color:var(--dk);min-width:96px;transition:border .13s}
+select.fs:focus{border-color:var(--og)}
+.btn-clr{height:31px;padding:0 11px;border-radius:var(--rs);border:none;background:var(--og);color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:background .13s}
+.btn-clr:hover{background:var(--ogl)}
+.btn-sync{height:31px;padding:0 11px;border-radius:var(--rs);border:1.5px solid var(--g2);background:var(--wh);color:var(--g5);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:500;transition:border .13s,color .13s}
+.btn-sync:hover{border-color:var(--og);color:var(--og)}
+.sico{display:inline-block}
+.syncing .sico{animation:spin .6s linear infinite}
+.sync-ok{border-color:var(--gn)!important;color:var(--gn)!important}
+
+/* ── PAGES ── */
+.pg{display:none;padding:20px 22px}
+.pg.on{display:block}
+
+/* ── KPI ── */
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.kc{background:var(--wh);border-radius:var(--rad);padding:15px 17px;border:1px solid var(--g2);position:relative;overflow:hidden}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kc.og::before{background:var(--og)}.kc.bl::before{background:var(--bl)}.kc.gn::before{background:var(--gn)}.kc.am::before{background:var(--am)}
+.klbl{font-size:10px;color:var(--g4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kval{font-size:15px;font-weight:700;color:var(--dk);line-height:1.2;font-variant-numeric:tabular-nums;word-break:break-all}
+.ksub{font-size:11px;color:var(--g4);margin-top:4px}
+
+/* ── LAYOUT ── */
+.row2{display:grid;grid-template-columns:3fr 2fr;gap:11px;margin-bottom:16px}
+.row2e{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.card{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px}
+.cardf{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px;margin-bottom:16px}
+.ctit{font-size:13px;font-weight:600;color:var(--dk);margin-bottom:3px}
+.csub{font-size:11px;color:var(--g4);margin-bottom:11px}
+.cw{position:relative;width:100%}
+
+/* ── PROGRESS ── */
+.prw{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.prl{font-size:12px;color:var(--dk);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prb{flex:1;height:6px;background:var(--g2);border-radius:3px;overflow:hidden;min-width:30px}
+.prf{height:6px;border-radius:3px}
+.prv{font-size:11px;color:var(--g5);flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.prw{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.prl{font-size:12px;color:var(--dk);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prb{flex:1;height:6px;background:var(--g2);border-radius:3px;overflow:hidden;min-width:30px}
+.prf{height:6px;border-radius:3px}
+.prv{font-size:11px;color:var(--g5);flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.prp{font-size:11px;color:var(--og);flex:0 0 34px;text-align:right;font-weight:700}
+
+/* ── ALERT ── */
+.alert{display:flex;align-items:flex-start;gap:10px;background:var(--ogp);border:1px solid rgba(232,81,26,.18);border-radius:var(--rad);padding:11px 15px;margin-bottom:16px}
+.alert-t{font-size:13px;color:var(--dk);line-height:1.5}
+.alert-t b{color:var(--og)}
+
+/* ── TABLE ── */
+.tw{overflow:auto;border-radius:var(--rad);border:1px solid var(--g2);background:var(--wh);margin-bottom:16px}
+.th2{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--g2);gap:8px;flex-wrap:wrap}
+.tsch{height:30px;padding:0 10px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:12px;outline:none;background:var(--g1);width:230px;transition:border .13s}
+.tsch:focus{border-color:var(--og)}
+table{width:100%;border-collapse:collapse;min-width:820px;font-size:12px}
+thead th{background:var(--dk2);color:#fff;padding:9px 11px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;cursor:pointer;user-select:none;white-space:nowrap;transition:background .1s}
+thead th:hover{background:var(--dk3)}
+thead th.sa::after{content:' ▲';font-size:9px;opacity:.65}
+thead th.sd::after{content:' ▼';font-size:9px;opacity:.65}
+tbody tr{border-bottom:1px solid var(--g2);transition:background .09s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--ogp)}
+td{padding:7px 11px;color:var(--dk);vertical-align:middle}
+td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.bdg{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;background:#EBEBEB;color:#555}
+.tfoot{padding:8px 17px;font-size:11px;color:var(--g4);border-top:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center}
+.tfoot b{color:var(--og)}
+.tag-old{color:var(--rd);font-weight:700}
+.tag-mid{color:var(--am);font-weight:600}
+.tag-ok{color:var(--gn);font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
+  <div class="spin"></div>
+  <div class="ltxt" id="ltxt">Conectando à planilha...</div>
+  <div class="lerr" id="lerr2"></div>
+  <button class="lbtn" id="lbtn" onclick="loadData()">↺ Tentar novamente</button>
+</div>
+
+<nav id="sb" style="display:none">
+  <div class="sb-logo"><img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'"></div>
+  <div class="sb-info">
+    📦 <b id="ref-date">—</b>
+    <div class="upd"><span class="dot" id="sdot"></span><span id="upd-t">sincronizando...</span></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sbs">Navegação</div>
+    <div class="ni on" data-pg="visao">📊 Visão Geral</div>
+    <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
+    <div class="sbs" style="margin-top:4px">Dados</div>
+    <div class="ni" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
+  </div>
+  <div class="sb-foot">
+    Painel interno <b>Grupo Energia</b><br>Uso confidencial
+    <div class="author">✍️ Elaborado por:<br><span>Murilo Henrique Roberto</span></div>
+  </div>
+</nav>
+
+<div id="main" style="display:none">
+  <div id="topbar">
+    <div class="tb-l">
+      <div class="ttl" id="ttl">Visão Geral</div>
+      <div class="tsub" id="tsub">Resumo do estoque obsoleto por local</div>
+    </div>
+    <div class="frow">
+      <select class="fs" id="floc" onchange="applyF()"><option value="">Local: Todos</option></select>
+      <button class="btn-clr" onclick="resetF()">↺ Limpar</button>
+      <button class="btn-sync" id="bsync" onclick="loadData(true)"><span class="sico">🔄</span>&nbsp;Sincronizar</button>
+    </div>
+  </div>
+
+  <div id="pg-visao" class="pg on">
+    <div class="alert"><span style="font-size:19px;flex-shrink:0">⚡</span><span class="alert-t" id="atxt">Carregando...</span></div>
+    <div class="kgrid">
+      <div class="kc og"><div class="klbl">📦 Valor Total Obsoleto</div><div class="kval" id="k1">—</div><div class="ksub" id="k1s">—</div></div>
+      <div class="kc bl"><div class="klbl">📊 % sobre Saldo Total</div><div class="kval" id="k2">—</div><div class="ksub" id="k2s">—</div></div>
+      <div class="kc am"><div class="klbl">🏢 Local Mais Crítico</div><div class="kval" id="k3">—</div><div class="ksub" id="k3s">—</div></div>
+      <div class="kc gn"><div class="klbl">⏳ Item Mais Antigo</div><div class="kval" id="k4">—</div><div class="ksub" id="k4s">—</div></div>
+    </div>
+    <div class="row2e">
+      <div class="card"><div class="ctit">Valor Obsoleto por Local</div><div class="csub">Distribuição do valor parado</div><div class="cw" style="height:250px"><canvas id="c1"></canvas></div></div>
+      <div class="card"><div class="ctit">% do Saldo que é Obsoleto</div><div class="csub">Obsoleto ÷ Saldo total de cada local</div><div class="cw" style="height:250px"><canvas id="c2"></canvas></div></div>
+    </div>
+    <div class="cardf">
+      <div class="ctit">Obsoleto vs. Saldo por Local de Estoque</div>
+      <div class="csub">Quanto o estoque obsoleto representa do saldo total de cada local</div>
+      <div id="tb-loc"></div>
+    </div>
+  </div>
+
+  <div id="pg-itens" class="pg">
+    <div class="tw">
+      <div class="th2">
+        <div><div class="ctit">Itens em Estoque Obsoleto</div><div class="csub" id="tcnt">—</div></div>
+        <input class="tsch" type="text" placeholder="🔍 Buscar código, produto, local..." oninput="ftbl(this.value)" id="tsrch">
+      </div>
+      <div style="max-height:560px;overflow-y:auto">
+        <table>
+          <thead><tr>
+            <th onclick="srt('codigo')">Código</th>
+            <th onclick="srt('produto')">Produto</th>
+            <th onclick="srt('local')">Local</th>
+            <th onclick="srt('valorUnit')">Valor Unit.</th>
+            <th onclick="srt('qtd')">Qtd</th>
+            <th onclick="srt('valorTotal')">Valor Total</th>
+            <th onclick="srt('ultimaSaida')">Última Saída</th>
+            <th onclick="srt('diasParado')">Dias Parado</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="tfoot"><span id="tfl">—</span><b>Grupo Energia — Estoque Obsoletos</b></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIGURAÇÃO
+// ══════════════════════════════════════════
+// ID do link publicado
+const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
+
+// Aba "ESTOQUE OBSOLETOS" — gid=0
+const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
+
+// Aba "SALDO ESTOQUE" — gid atualizado com a informação fornecida
+const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
+
+// Link de edição da planilha
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
+function openSheet(){ window.open(SHEET_URL, '_blank'); }
+
+// ══════════════════════════════════════════
+//  DADOS
+// ══════════════════════════════════════════
+let RAW=[], FILT=[], SALDO={}, sk='valorTotal', sd=-1;
+
+const fBRL = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fAX   = v => v>=1e6 ? 'R$'+(v/1e6).toFixed(1)+'M' : v>=1e3 ? 'R$'+(v/1e3).toFixed(0)+'K' : 'R$'+v.toFixed(0);
+
+const CL = ['#E8511A','#1A5FA8','#2EA86B','#D4830A','#9B59B6','#D43A3A','#16A085','#C0621A','#2980B9','#1B7A45'];
+let CH = {};
+const dch = id => { if(CH[id]){ CH[id].destroy(); delete CH[id]; } };
+
+// ── PROXIES com cache-busting ─────────────
+function proxyUrls(base){
+  const ts = Date.now();
+  const u = base + '&_=' + ts;
+  return [
+    'https://corsproxy.io/?' + encodeURIComponent(u),
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+    'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
+  ];
+}
+
+async function fetchCSV(baseUrl, label){
+  const urls = proxyUrls(baseUrl);
+  for(let i=0; i<urls.length; i++){
+    document.getElementById('ltxt').textContent = 'Buscando '+label+' ('+(i+1)+'/'+urls.length+')...';
+    try{
+      const ctrl = new AbortController();
+      const tid = setTimeout(()=>ctrl.abort(), 10000);
+      const res = await fetch(urls[i], { signal:ctrl.signal, cache:'no-store' });
+      clearTimeout(tid);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const txt = await res.text();
+      if(txt.startsWith('{') && txt.includes('"contents"')){ const j=JSON.parse(txt); return j.contents||''; }
+      if(txt.length > 20) return txt;
+      throw new Error('Resposta vazia');
+    } catch(e){ console.warn('Proxy '+(i+1)+' falhou ('+label+'):',e.message); }
+  }
+  throw new Error('Não foi possível carregar '+label+'. Verifique se a aba está publicada e o gid está correto.');
+}
+
+// ── CSV PARSER genérico ───────────────────
+function pLine(line){
+  const cols=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
+    else if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; }
+    else cur+=c;
+  }
+  cols.push(cur.trim()); return cols;
+}
+function splitLines(txt){ return txt.replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim().split('\n'); }
+
+const pNum = v => {
+  if(!v||v===''||v==='-'||v==='#N/A') return 0;
+  let s=v.replace(/"/g,'').replace(/R\$\s*/g,'').trim();
+  if(s.includes(',')&&s.includes('.')) return parseFloat(s.replace(/\./g,'').replace(',','.'));
+  if(s.includes(',')) return parseFloat(s.replace(',','.'));
+  return parseFloat(s)||0;
+};
+
+function parseDateBR(v){
+  if(!v) return null;
+  const s = v.replace(/"/g,'').trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return new Date(+m[3], +m[2]-1, +m[1]);
+  return null;
+}
+
+function parseObsoletos(txt){
+  const lines = splitLines(txt);
+  if(lines.length < 2) return [];
+  const hdrs = pLine(lines[0]);
+  const fc = names => {
+    for(const n of names){
+      const i = hdrs.findIndex(h=>h.replace(/"/g,'').toLowerCase().includes(n.toLowerCase()));
+      if(i>=0) return i;
+    }
+    return -1;
+  };
+  const iCod=fc(['Codigo','Código']), iNome=fc(['Nome do produto','Produto']),
+        iVU=fc(['Valor unitario','Valor unitário']), iQtd=fc(['Quantidade']),
+        iVT=fc(['Valor total']), iData=fc(['Ultima saida','Última saída']),
+        iLoc=fc(['Local de Estoque','Local']);
+
+  const rows=[];
+  const hoje = new Date();
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const c = pLine(lines[i]);
+    const local = (c[iLoc]||'').replace(/"/g,'').trim();
+    const valorTotal = iVT>=0 ? pNum(c[iVT]) : 0;
+    if(!local || valorTotal<=0) continue;
+    const dt = iData>=0 ? parseDateBR(c[iData]) : null;
+    const diasParado = dt ? Math.round((hoje-dt)/86400000) : null;
+    rows.push({
+      codigo   : (c[iCod]||'').replace(/"/g,'').trim(),
+      produto  : (c[iNome]||'').replace(/"/g,'').trim(),
+      valorUnit: iVU>=0 ? pNum(c[iVU]) : 0,
+      qtd      : iQtd>=0 ? pNum(c[iQtd]) : 0,
+      valorTotal,
+      ultimaSaida: dt ? dt.toLocaleDateString('pt-BR') : '—',
+      diasParado : diasParado==null ? -1 : diasParado,
+      local
+    });
+  }
+  return rows;
+}
+
+function parseSaldo(txt){
+  const lines = splitLines(txt);
+  if(lines.length < 2) return {};
+  const hdrs = pLine(lines[0]);
+  const fc = names => {
+    for(const n of names){
+      const i = hdrs.findIndex(h=>h.replace(/"/g,'').toLowerCase().includes(n.toLowerCase()));
+      if(i>=0) return i;
+    }
+    return -1;
+  };
+  const iLoc=fc(['Local de Estoque','Local']), iVT=fc(['Valor total']);
+  const out={};
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const c = pLine(lines[i]);
+    const local = (c[iLoc]||'').replace(/"/g,'').trim();
+    if(!local || local.toUpperCase()==='TOTAL') continue;
+    out[local] = iVT>=0 ? pNum(c[iVT]) : 0;
+  }
+  return out;
+}
+
+function grp(arr, key){
+  return arr.reduce((a,r)=>{
+    const k=r[key]; if(!a[k])a[k]={n:0,valorTotal:0};
+    a[k].n++; a[k].valorTotal+=r.valorTotal||0;
+    return a;
+  },{});
+}
+const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
+
+// ── LOAD ──────────────────────────────────
+async function loadData(manual=false){
+  const btn = document.getElementById('bsync');
+  if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
+  const sdot = document.getElementById('sdot');
+  if(sdot) sdot.classList.remove('dot-err');
+
+  try{
+    const [csvObs, csvSaldo] = await Promise.all([
+      fetchCSV(URL_OBSOLETOS, 'Estoque Obsoletos'),
+      fetchCSV(URL_SALDO, 'Saldo de Estoque')
+    ]);
+    const data = parseObsoletos(csvObs);
+    if(!data.length) throw new Error('Nenhum dado válido em Estoque Obsoletos.');
+    SALDO = parseSaldo(csvSaldo);
+
+    RAW = data; FILT = [...RAW];
+    initFilters(); initUI();
+
+    const now = new Date();
+    document.getElementById('ref-date').textContent = now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+    document.getElementById('upd-t').textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('sb').style.display = 'flex';
+    document.getElementById('main').style.display = 'flex';
+
+    if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
+
+    const pg = document.querySelector('.ni.on');
+    renderPg(pg ? pg.dataset.pg : 'visao');
+
+  } catch(e){
+    console.error('Erro:', e);
+    document.getElementById('ltxt').textContent = 'Erro ao carregar';
+    document.getElementById('lerr2').innerHTML = '<b>Falha na conexão</b><br>'+e.message;
+    document.getElementById('lerr2').style.display = 'block';
+    document.getElementById('lbtn').style.display = 'block';
+    if(sdot) sdot.classList.add('dot-err');
+    const updt = document.getElementById('upd-t'); if(updt) updt.textContent = 'Falha na última sync';
+    if(btn) btn.classList.remove('syncing');
+    if(manual) alert('❌ Erro ao sincronizar:\n'+e.message);
+  }
+}
+
+// ── NAV ───────────────────────────────────
+let uiOn = false;
+function initUI(){
+  if(uiOn) return; uiOn = true;
+  const titles={visao:'Visão Geral',itens:'Itens Obsoletos'};
+  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos'};
+  document.querySelectorAll('.ni[data-pg]').forEach(n=>{
+    n.onclick = function(){
+      document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+      document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
+      this.classList.add('on');
+      const id = this.dataset.pg;
+      document.getElementById('pg-'+id).classList.add('on');
+      document.getElementById('ttl').textContent = titles[id];
+      document.getElementById('tsub').textContent = subs[id];
+      applyF();
+    };
+  });
+}
+
+function applyF(){
+  const fl=document.getElementById('floc').value;
+  FILT = RAW.filter(r=> !fl || r.local===fl);
+  const pg = document.querySelector('.pg.on'); if(pg) renderPg(pg.id.replace('pg-',''));
+}
+function resetF(){
+  document.getElementById('floc').value='';
+  document.getElementById('tsrch').value='';
+  FILT = [...RAW];
+  const pg = document.querySelector('.pg.on'); if(pg) renderPg(pg.id.replace('pg-',''));
+}
+function initFilters(){
+  const el=document.getElementById('floc'); while(el.options.length>1)el.remove(1);
+  [...new Set(RAW.map(r=>r.local).filter(Boolean))].sort()
+    .forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+}
+
+// ── RENDER ────────────────────────────────
+const CO = {responsive:true, maintainAspectRatio:false};
+const GRD = {color:'rgba(0,0,0,0.05)'};
+
+function renderPg(id){
+  const tot = FILT.reduce((s,r)=>s+r.valorTotal,0);
+  const saldoTotalGeral = Object.values(SALDO).reduce((s,v)=>s+v,0);
+
+  if(id==='visao'){
+    const lg = grp(FILT,'local'); const lk = skeys(lg);
+
+    // % que cada local de obsoleto representa sobre o saldo daquele local
+    const pctPorLocal = lk.map(k=>({
+      local:k, valorObs:lg[k].valorTotal, saldo:SALDO[k]||0,
+      pct: SALDO[k] ? (lg[k].valorTotal/SALDO[k]*100) : null
+    }));
+    const critico = [...pctPorLocal].filter(x=>x.pct!=null).sort((a,b)=>b.pct-a.pct)[0];
+
+    const pctGeral = saldoTotalGeral>0 ? tot/saldoTotalGeral*100 : null;
+
+    document.getElementById('k1').textContent = fBRL(tot);
+    document.getElementById('k1s').textContent = FILT.length+' itens obsoletos';
+    document.getElementById('k2').textContent = pctGeral!=null ? pctGeral.toFixed(2)+'%' : '—';
+    document.getElementById('k2s').textContent = saldoTotalGeral>0 ? 'de '+fBRL(saldoTotalGeral)+' em saldo' : 'saldo não carregado';
+    document.getElementById('k3').textContent = critico ? critico.local : (lk[0]||'—');
+    document.getElementById('k3s').textContent = critico ? critico.pct.toFixed(1)+'% do saldo local é obsoleto' : (lk[0]?fBRL(lg[lk[0]].valorTotal):'—');
+
+    const maisAntigo = [...FILT].filter(r=>r.diasParado>=0).sort((a,b)=>b.diasParado-a.diasParado)[0];
+    document.getElementById('k4').textContent = maisAntigo ? maisAntigo.diasParado+' dias' : '—';
+    document.getElementById('k4s').textContent = maisAntigo ? maisAntigo.produto.slice(0,28) : '—';
+
+    document.getElementById('atxt').innerHTML =
+      'Estoque obsoleto consolidado — <b>'+fBRL(tot)+'</b> em <b>'+FILT.length+' itens</b>'+
+      (pctGeral!=null ? ', representando <b>'+pctGeral.toFixed(2)+'%</b> do saldo total de estoque.' : '.');
+
+    dch('c1'); CH['c1']=new Chart(document.getElementById('c1'),{type:'bar',
+      data:{labels:lk,datasets:[{label:'Obsoleto',data:lk.map(k=>lg[k].valorTotal),backgroundColor:lk.map((_,i)=>CL[i%CL.length]),borderRadius:5,borderSkipped:false}]},
+      options:{...CO,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fBRL(c.raw)}}},
+        scales:{x:{ticks:{font:{size:10},maxRotation:20},grid:{display:false}},y:{ticks:{callback:fAX,font:{size:10}},grid:GRD}}}});
+
+    const pctOrdered = [...pctPorLocal].sort((a,b)=>(b.pct||0)-(a.pct||0));
+    dch('c2'); CH['c2']=new Chart(document.getElementById('c2'),{type:'bar',
+      data:{labels:pctOrdered.map(x=>x.local),datasets:[{label:'% Obsoleto',data:pctOrdered.map(x=>x.pct||0),backgroundColor:pctOrdered.map((_,i)=>CL[i%CL.length]),borderRadius:5,borderSkipped:false}]},
+      options:{...CO,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.toFixed(2)+'% do saldo local'}}},
+        scales:{x:{ticks:{callback:v=>v+'%',font:{size:10}},grid:GRD},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+
+    let h='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>';
+    ['Local','Itens','Valor Obsoleto','Saldo Total do Local','% Representa'].forEach(col=>
+      h+='<th style="background:#2D2D2D;color:#fff;padding:8px 11px;font-size:10px;text-transform:uppercase;text-align:left">'+col+'</th>');
+    h+='</tr></thead><tbody>';
+    pctOrdered.forEach((x,i)=>{
+      const pctTxt = x.pct!=null ? x.pct.toFixed(1)+'%' : 'sem saldo cadastrado';
+      const cls = x.pct==null ? '' : x.pct>15 ? 'tag-old' : x.pct>5 ? 'tag-mid' : 'tag-ok';
+      h+='<tr style="background:'+(i%2?'#fff':'#FAFAFA')+';border-bottom:1px solid #eee">'
+        +'<td style="padding:8px 11px;font-weight:600">'+x.local+'</td>'
+        +'<td style="padding:8px 11px;text-align:center;color:#888">'+lg[x.local].n+'</td>'
+        +'<td style="padding:8px 11px;text-align:right;font-variant-numeric:tabular-nums">'+fBRL(x.valorObs)+'</td>'
+        +'<td style="padding:8px 11px;text-align:right;font-variant-numeric:tabular-nums;color:#888">'+(x.saldo?fBRL(x.saldo):'—')+'</td>'
+        +'<td style="padding:8px 11px;text-align:right" class="'+cls+'">'+pctTxt+'</td>'
+        +'</tr>';
+    });
+    document.getElementById('tb-loc').innerHTML=h+'</tbody></table>';
+  }
+
+  if(id==='itens') renderTbl(FILT);
+}
+
+// ── TABELA ────────────────────────────────
+function renderTbl(data){
+  const sorted = [...data].sort((a,b)=>{
+    const av=a[sk], bv=b[sk];
+    return (typeof av==='number' ? av-bv : String(av).localeCompare(String(bv))) * sd;
+  });
+  document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
+  document.getElementById('tfl').textContent = sorted.length+' itens';
+  document.getElementById('tbody').innerHTML = sorted.map(r=>{
+    const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
+    return '<tr>'
+      +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
+      +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
+      +'<td><span class="bdg">'+r.local+'</span></td>'
+      +'<td class="nm">'+fBRL(r.valorUnit)+'</td>'
+      +'<td class="nm">'+r.qtd+'</td>'
+      +'<td class="nm">'+fBRL(r.valorTotal)+'</td>'
+      +'<td style="font-size:11px;color:#555;white-space:nowrap">'+r.ultimaSaida+'</td>'
+      +'<td class="nm '+diasCls+'">'+(r.diasParado>=0?r.diasParado:'—')+'</td>'
+      +'</tr>';
+  }).join('');
+  updH();
+}
+
+// ── INITIALIZATION ────────────────────────
+function ftbl(q){
+  const lq=q.toLowerCase();
+  renderTbl(FILT.filter(r=>
+    r.produto.toLowerCase().includes(lq)||r.codigo.toLowerCase().includes(lq)||r.local.toLowerCase().includes(lq)));
+}
+function srt(key){ if(sk===key) sd*=-1; else{sk=key;sd=-1;} ftbl(document.getElementById('tsrch').value); }
+function updH(){
+  const km={codigo:0,produto:1,local:2,valorUnit:3,qtd:4,valorTotal:5,ultimaSaida:6,diasParado:7};
+  document.querySelectorAll('#pg-itens thead th').forEach(t=>t.classList.remove('sa','sd'));
+  const idx=km[sk]; if(idx!=null){ const t=document.querySelectorAll('#pg-itens thead th')[idx]; if(t)t.classList.add(sd===1?'sa':'sd'); }
+}
+
+// ── INIT ──────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
