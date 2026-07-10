@@ -130,7 +130,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .tag-mid{color:var(--am);font-weight:600}
 .tag-ok{color:var(--gn);font-weight:600}
 
-/* ── REQUISITOS DO WORKFLOW ── */
+/* ── ELEMENTOS EXCLUSIVOS DE GOVERNANÇA ── */
 .chk-col { width: 45px; text-align: center !important; }
 .chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
 .cart-counter-badge { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9px; margin-left: auto; }
@@ -143,7 +143,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .btn-del-cart:hover { text-decoration: underline; }
 .sol-block { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; }
 .sol-block-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
-.sol-badge-status { background: var(--ogp); color: var(--og); padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 
 /* ── ABAS INTERNAS ADMIN ── */
 .admin-tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid var(--g2); margin-bottom: 16px; }
@@ -152,9 +151,17 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .admin-tab-btn.active { color: var(--og); border-bottom-color: var(--og); }
 .admin-select-status { height: 30px; padding: 0 6px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; background: var(--g1); color: var(--dk); outline: none; cursor: pointer; font-weight: 600; }
 .admin-select-status:focus { border-color: var(--bl); }
+
+/* Bloqueador de Tela Técnico */
+.glass-loader { position: fixed; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 10px; }
 </style>
 </head>
 <body>
+
+<div class="glass-loader" id="api-glass" style="display:none">
+  <div class="spin"></div>
+  <div style="font-weight:600; color:var(--dk); font-size:14px;" id="api-glass-text">Processando na Planilha...</div>
+</div>
 
 <div class="overlay" id="login-screen">
   <div class="mbox">
@@ -172,14 +179,14 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
     <div class="ferr" id="lerr">Usuário ou senha incorretos.</div>
     <button class="mbtn" onclick="doLogin()">Entrar</button>
-    <div class="mfoot">Grupo Energia · Uso interno confidencial</div>
+    <div class="mfoot">Grupo Energia · Uso interno de governança</div>
   </div>
 </div>
 
 <div id="loading" style="display:none">
   <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
   <div class="spin"></div>
-  <div class="ltxt" id="ltxt">Conectando à planilha...</div>
+  <div class="ltxt" id="ltxt">Conectando à planilha corporativa...</div>
   <div class="lerr" id="lerr2"></div>
   <button class="lbtn" id="lbtn" onclick="loadData()">↺ Tentar novamente</button>
 </div>
@@ -197,7 +204,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="ni" id="menu-carrinho" data-pg="carrinho" style="display:none">🛒 Carrinho <span class="cart-counter-badge" id="cart-count-badge">0</span></div>
     <div class="ni" id="menu-solicitacoes" data-pg="solicitacoes" style="display:none">📋 Solicitações de Destinação <span class="cart-counter-badge" id="sol-count-badge" style="background:var(--rd)">0</span></div>
     <div class="sbs admin-only" style="margin-top:4px">Dados</div>
-    <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
+    <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Planilha Original</div>
   </div>
   <div class="sb-foot">
     Painel interno <b>Grupo Energia</b><br>Uso confidencial
@@ -296,7 +303,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   <div id="pg-solicitacoes" class="pg">
     <div class="admin-tabs-nav">
       <button class="admin-tab-btn active" id="btn-tab-pendentes" onclick="switchAdminTab('pendentes')">Pendentes</button>
-      <button class="admin-tab-btn" id="btn-tab-historico" onclick="switchAdminTab('historico')">Histórico (Concluídas / Canceladas)</button>
+      <button class="admin-tab-btn" id="btn-tab-historico" onclick="switchAdminTab('historico')">Histórico de Destinações</button>
     </div>
     <div id="admin-sol-wrapper"></div>
   </div>
@@ -309,12 +316,19 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIGURAÇÃO DO SISTEMA E LINKS
+//  CONFIGURAÇÃO INTEGRAL DE PRODUTIVIDADE
 // ══════════════════════════════════════════
 const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
 const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
-const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
+const URL_SALDO     = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
+const SHEET_URL     = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
+
+// Endpoints exatos configurados via GIDs fornecidos
+const URL_PENDENTES = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=1243460569&single=true&output=csv`; 
+const URL_HISTORICO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=94530698&single=true&output=csv`;
+
+// Macro Web App unificada do Google Apps Script
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycby-AZ-0lCCS9m8x-wHMCFdWXz4cPh0jgkGQqBMr0KOEeNxdCwkvlfkexEpZ4OFDWLTu/exec';
 
 const AUTH_ADMIN_USER  = 'admin';
 const AUTH_ADMIN_PWD   = 'admin@energia';
@@ -327,7 +341,10 @@ let currentRole = null;
 let itemCheckState = {};
 let currentAdminViewTab = 'pendentes';
 
-// ── AUTENTICAÇÃO INTEGRAL ──────────────────
+let RAW_PENDENTES = [];
+let RAW_HISTORICO = [];
+
+// ── AUTENTICAÇÃO E PERMISSÕES ──────────────
 function doLogin(){
   const user = document.getElementById('luser').value.trim();
   const pwd  = document.getElementById('lpwd').value;
@@ -368,7 +385,6 @@ function configureProfileMenus(){
     else { b.textContent = '👤 Visualizador'; b.style.color = 'var(--gn)'; }
   }
   refreshCartIconBadge();
-  refreshAdminIconBadge();
 }
 
 function eye(id, el){
@@ -383,7 +399,7 @@ document.getElementById('luser').addEventListener('keydown', e => { if(e.key==='
 function openSheet(){ if (currentRole === 'admin') window.open(SHEET_URL, '_blank'); }
 
 // ══════════════════════════════════════════
-//  PARSERS ORIGINAIS (CONEXÃO E DERIVAÇÃO)
+//  ALGORITMOS DE LEITURA E PARSE CSV DE ALTA VELOCIDADE
 // ══════════════════════════════════════════
 let RAW=[], FILT=[], SALDO={}, sk='valorTotal', sd=-1;
 
@@ -409,7 +425,7 @@ function proxyUrls(base){
 async function fetchCSV(baseUrl, label){
   const urls = proxyUrls(baseUrl);
   for(let i=0; i<urls.length; i++){
-    document.getElementById('ltxt').textContent = 'Buscando '+label+' ('+(i+1)+'/'+urls.length+')...';
+    document.getElementById('ltxt').textContent = 'Conectando '+label+' ('+(i+1)+'/'+urls.length+')...';
     try{
       const ctrl = new AbortController();
       const tid = setTimeout(()=>ctrl.abort(), 10000);
@@ -418,11 +434,11 @@ async function fetchCSV(baseUrl, label){
       if(!res.ok) throw new Error('HTTP '+res.status);
       const txt = await res.text();
       if(txt.startsWith('{') && txt.includes('"contents"')){ const j=JSON.parse(txt); return j.contents||''; }
-      if(txt.length > 20) return txt;
-      throw new Error('Resposta vazia');
-    } catch(e){ console.warn('Proxy '+(i+1)+' falhou ('+label+'):',e.message); }
+      if(txt.length > 5 || txt.length === 0) return txt;
+      throw new Error('Payload corrompido');
+    } catch(e){ console.warn('Proxy '+(i+1)+' instável ('+label+'):',e.message); }
   }
-  throw new Error('Não foi possível carregar '+label+'.');
+  throw new Error('Não foi possível sincronizar ' + label);
 }
 
 function pLine(line){
@@ -519,6 +535,57 @@ function parseSaldo(txt){
   return out;
 }
 
+function parseWorkflowPendentes(txt) {
+  const lines = splitLines(txt);
+  if (lines.length < 2) return [];
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const c = pLine(lines[i]);
+    rows.push({
+      idWorkflow: c[0],
+      dataSolicitacao: c[1],
+      solicitante: c[2],
+      codigoItem: c[3],
+      descricao: c[4],
+      local: c[5],
+      quantidade: pNum(c[6]),
+      valorTotal: pNum(c[7]),
+      destino: c[8],
+      obsGestor: c[9],
+      statusItem: c[10] || 'Aguardando Análise',
+      obsAdmin: c[11] || ''
+    });
+  }
+  return rows;
+}
+
+function parseWorkflowHistorico(txt) {
+  const lines = splitLines(txt);
+  if (lines.length < 2) return [];
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const c = pLine(lines[i]);
+    rows.push({
+      idWorkflow: c[0],
+      dataSolicitacao: c[1],
+      dataConclusao: c[2],
+      solicitante: c[3],
+      codigoItem: c[4],
+      descricao: c[5],
+      local: c[6],
+      quantidade: pNum(c[7]),
+      valorTotal: pNum(c[8]),
+      destino: c[9],
+      obsGestor: c[10],
+      obsAdmin: c[11],
+      statusItem: c[12]
+    });
+  }
+  return rows;
+}
+
 function grp(arr, key){
   return arr.reduce((a,r)=>{
     const k=r[key]; if(!a[k])a[k]={n:0,valorTotal:0};
@@ -528,7 +595,7 @@ function grp(arr, key){
 }
 const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
 
-// ── FLUXO DE CARGA PRINCIPAL ──────────────
+// ── FLUXO DE SINCRONIZAÇÃO SENSÍVEL ───────
 async function loadData(manual=false){
   const btn = document.getElementById('bsync');
   if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
@@ -536,15 +603,21 @@ async function loadData(manual=false){
   if(sdot) sdot.classList.remove('dot-err');
 
   try{
-    const [csvObs, csvSaldo] = await Promise.all([
-      fetchCSV(URL_OBSOLETOS, 'Estoque Obsoletos'),
-      fetchCSV(URL_SALDO, 'Saldo de Estoque')
+    const [csvObs, csvSaldo, csvPendentes, csvHistorico] = await Promise.all([
+      fetchCSV(URL_OBSOLETOS, 'Estoque Obsoletos Base'),
+      fetchCSV(URL_SALDO, 'Volume Saldo Relativo'),
+      fetchCSV(URL_PENDENTES, 'Fila de Pendências'),
+      fetchCSV(URL_HISTORICO, 'Histórico Consolidado')
     ]);
-    const data = parseObsoletos(csvObs);
-    if(!data.length) throw new Error('Nenhum dado válido processado.');
+    
+    RAW = parseObsoletos(csvObs);
+    if(!RAW.length) throw new Error('Dados de estoque base indisponíveis.');
     SALDO = parseSaldo(csvSaldo);
+    
+    RAW_PENDENTES = parseWorkflowPendentes(csvPendentes);
+    RAW_HISTORICO = parseWorkflowHistorico(csvHistorico);
 
-    RAW = data; FILT = [...RAW];
+    FILT = [...RAW];
     initFilters(); initUI();
 
     const now = new Date();
@@ -557,18 +630,17 @@ async function loadData(manual=false){
 
     if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
 
-    // INTEGRAÇÃO INTELIGENTE DE ATUALIZAÇÃO DA PLANILHA (ADMIN ONLY)
-    if (currentRole === 'admin') {
-      executarVerificacaoInteligenteEstoque();
-    }
+    if (currentRole === 'admin') { executarVerificacaoInteligenteEstoque(); }
+
+    refreshAdminIconBadge();
 
     const activeMenu = document.querySelector('.ni.on');
     renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
 
   } catch(e){
     console.error(e);
-    document.getElementById('ltxt').textContent = 'Erro ao carregar';
-    document.getElementById('lerr2').innerHTML = '<b>Falha na conexão</b><br>'+e.message;
+    document.getElementById('ltxt').textContent = 'Erro de Rede';
+    document.getElementById('lerr2').innerHTML = '<b>Falha catastrófica ao sincronizar dados</b><br>'+e.message;
     document.getElementById('lerr2').style.display = 'block';
     document.getElementById('lbtn').style.display = 'block';
     if(sdot) sdot.classList.add('dot-err');
@@ -576,12 +648,12 @@ async function loadData(manual=false){
   }
 }
 
-// ── NAVEGAÇÃO ENTRE ABAS PRESERVADA ───────
+// ── ROTINAS DE FILTRO E MÓDULOS DE TELA ────
 let uiOn = false;
 function initUI(){
   if(uiOn) return; uiOn = true;
-  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'🛒 Carrinho de Destinação',solicitacoes:'📋 Solicitações de Destinação'};
-  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista de itens identificados como obsoletos no sistema',carrinho:'Gerencie materiais adicionados, defina destinações e revise antes de enviar',solicitacoes:'Histórico de fluxos e destinações oficialmente enviadas pelos Gestores'};
+  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'🛒 Carrinho de Destinação',solicitacoes:'📋 Ciclo de Vida de Destinações'};
+  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista de itens identificados como obsoletos no sistema',carrinho:'Gerencie materiais adicionados, defina destinações e envie à planilha',solicitacoes:'Acompanhamento em tempo real das abas de governança da Planilha'};
   
   document.querySelectorAll('.ni[data-pg]').forEach(n=>{
     n.onclick = function(){
@@ -620,7 +692,6 @@ function initFilters(){
     .forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
 }
 
-// ── CENTRAL DE RENDERIZAÇÃO DE ABAS ───────
 function renderTab(id){
   const tot = FILT.reduce((s,r)=>s+r.valorTotal,0);
   const saldoTotalGeral = Object.values(SALDO).reduce((s,v)=>s+v,0);
@@ -665,18 +736,17 @@ function renderTab(id){
   if(id==='solicitacoes') renderMóduloSolicitacoes();
 }
 
-// ── RENDERIZADOR INTEGRAL DA TABELA PRINCIPAL ──
 function renderTbl(data){
   const sorted = [...data].sort((a,b)=>{ const av=a[sk], bv=b[sk]; return (typeof av==='number'?av-bv:String(av).localeCompare(String(bv)))*sd; });
   document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
   document.getElementById('tfl').textContent = sorted.length+' itens';
   
   const isGestor = currentRole === 'gestor';
-  const cart = readCartData();
+  const cart = readCartInSession();
 
   document.getElementById('tbody').innerHTML = sorted.map(r=>{
     const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
-    const isLocked = cart[r.uid] ? 'disabled title="Armazenado no Carrinho"' : '';
+    const isLocked = cart[r.uid] ? 'disabled title="Retido no Carrinho"' : '';
     const isChecked = itemCheckState[r.uid] ? 'checked' : '';
     
     return '<tr>'
@@ -712,13 +782,15 @@ function marcarCabecalhoOrdenacao(){
 }
 
 // ══════════════════════════════════════════
-//  LÓGICA ISOLADA: CARRINHO DE DESTINAÇÃO
+//  PERSISTÊNCIA EM MEMÓRIA VOLÁTIL (CARRINHO)
 // ══════════════════════════════════════════
-function readCartData() { return JSON.parse(localStorage.getItem('pool_carrinho_energia') || '{}'); }
-function writeCartData(obj) { localStorage.setItem('pool_carrinho_energia', JSON.stringify(obj)); refreshCartIconBadge(); }
+let INTERNAL_SESSION_CART = {};
+
+function readCartInSession() { return INTERNAL_SESSION_CART; }
+function writeCartInSession(obj) { INTERNAL_SESSION_CART = obj; refreshCartIconBadge(); }
 
 function refreshCartIconBadge() {
-  const cart = readCartData();
+  const cart = readCartInSession();
   const len = Object.keys(cart).length;
   const b = document.getElementById('cart-count-badge');
   if(b) {
@@ -740,6 +812,15 @@ function selectAllVisible(master) {
   });
 }
 
+function refreshAdminIconBadge() {
+  const pendentesCount = RAW_PENDENTES.filter(i => i.statusItem === 'Aguardando Análise' || i.statusItem === 'Em Processamento').length;
+  const b = document.getElementById('sol-count-badge');
+  if(b) {
+    b.textContent = pendentesCount;
+    b.style.display = pendentesCount > 0 ? 'inline-block' : 'none';
+  }
+}
+
 function refreshFloatBar() {
   const cnt = Object.keys(itemCheckState).length;
   const bar = document.getElementById('cart-float-bar');
@@ -752,7 +833,7 @@ function refreshFloatBar() {
 }
 
 function pushSelectedToCart() {
-  const cart = readCartData();
+  const cart = readCartInSession();
   Object.keys(itemCheckState).forEach(uid => {
     const orig = RAW.find(r => r.uid === uid);
     if (orig && !cart[uid]) {
@@ -763,20 +844,20 @@ function pushSelectedToCart() {
       };
     }
   });
-  writeCartData(cart);
+  writeCartInSession(cart);
   itemCheckState = {};
   document.getElementById('chk-master').checked = false;
-  alert('🛒 Materiais adicionados com sucesso ao lote de preparação do Carrinho!');
+  alert('🛒 Materiais alocados no Carrinho com sucesso!');
   applyF();
 }
 
 function renderMóduloCarrinho() {
-  const cart = readCartData();
+  const cart = readCartInSession();
   const tb = document.getElementById('cart-tbody');
   const uids = Object.keys(cart);
   
   if (uids.length === 0) {
-    tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:45px; color:var(--g4)">Nenhum material pendente no carrinho. Acesse "Itens Obsoletos" e faça a seleção.</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:45px; color:var(--g4)">Carrinho vazio. Marque os itens desejados na listagem de estoque.</td></tr>`;
     document.getElementById('cart-qty-summary').textContent = 0;
     return;
   }
@@ -804,7 +885,7 @@ function renderMóduloCarrinho() {
           </select>
         </td>
         <td>
-          <input type="text" class="cart-tx" placeholder="Escreva observações aqui..." value="${i.observacaoGestor || ''}" oninput="alterarPropriedadeItemCarrinho('${uid}', 'observacaoGestor', this.value)">
+          <input type="text" class="cart-tx" placeholder="Nota descritiva gestor..." value="${i.observacaoGestor || ''}" oninput="alterarPropriedadeItemCarrinho('${uid}', 'observacaoGestor', this.value)">
         </td>
         <td style="text-align:center">
           <button class="btn-del-cart" onclick="eliminarDoCarrinho('${uid}')">Remover</button>
@@ -815,75 +896,81 @@ function renderMóduloCarrinho() {
 }
 
 function alterarPropriedadeItemCarrinho(uid, prop, val) {
-  const cart = readCartData();
+  const cart = readCartInSession();
   if (cart[uid]) {
     cart[uid][prop] = val;
-    localStorage.setItem('pool_carrinho_energia', JSON.stringify(cart));
   }
 }
 
 function eliminarDoCarrinho(uid) {
-  const cart = readCartData();
+  const cart = readCartInSession();
   delete cart[uid];
-  writeCartData(cart);
+  writeCartInSession(cart);
   renderMóduloCarrinho();
 }
 
-function dispatchLoteDestinacao() {
-  const cart = readCartData();
+// ── CONEXÃO ASSÍNCRONA COM O GOOGLE APPS SCRIPT ──
+async function callAppsScriptAPI(actionName, payloadData) {
+  document.getElementById('api-glass').style.display = 'flex';
+  try {
+    const response = await fetch(URL_APPS_SCRIPT, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: actionName, payload: payloadData })
+    });
+    const resJson = await response.json();
+    if (!resJson.success) throw new Error(resJson.error || 'Erro interno retornado pelo servidor');
+    return resJson;
+  } catch(e) {
+    alert('❌ Ocorreu um erro ao persistir as alterações na planilha:\n' + e.message);
+    throw e;
+  } finaly {
+    document.getElementById('api-glass').style.display = 'none';
+  }
+}
+
+async function dispatchLoteDestinacao() {
+  const cart = readCartInSession();
   const list = Object.values(cart);
   
   if (list.length === 0) {
-    alert('❌ O carrinho está vazio!');
+    alert('❌ Nenhum material disponível para despacho.');
     return;
   }
   
-  if (confirm(`Deseja despachar oficialmente essa solicitação com ${list.length} material(is) regulamentado(s)?`)) {
+  if (confirm(`Deseja efetivar o envio deste lote com ${list.length} material(is) para a base de dados da Planilha?`)) {
     const sId = 'WF-' + Date.now().toString().slice(-6);
-    const compactado = {
-      uidWorkflow: sId,
+    const dataH = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    
+    const pacoteItens = list.map(m => ({
+      idWorkflow: sId,
+      dataSolicitacao: dataH,
       solicitante: AUTH_GEST_USER,
-      timestamp: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-      statusGlobal: 'Aguardando Análise',
-      totalItens: list.length,
-      loteItens: list.map(m => ({
-        codigo: m.codigo,
-        produto: m.produto,
-        local: m.local,
-        qtd: m.qtd,
-        valorTotal: m.valorTotal,
-        destino: m.destinoSelected,
-        obs: m.observacaoGestor || '—'
-      }))
-    };
+      codigoItem: m.codigo,
+      descricao: m.produto,
+      local: m.local,
+      quantidade: m.qtd,
+      valorTotal: m.valorTotal,
+      destino: m.destinoSelected,
+      obsGestor: m.observacaoGestor || '—',
+      statusItem: 'Aguardando Análise'
+    }));
     
-    let bancoSolicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-    bancoSolicitacoes.unshift(compactado);
-    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(bancoSolicitacoes));
-    
-    localStorage.removeItem('pool_carrinho_energia');
-    refreshCartIconBadge();
-    refreshAdminIconBadge();
-    
-    alert('🚀 Solicitação cadastrada e transmitida à Área do Administrador com status "Aguardando Análise".');
-    renderMóduloCarrinho();
+    try {
+      await callAppsScriptAPI('criarSolicitacao', pacoteItens);
+      writeCartInSession({});
+      alert('🚀 Solicitação persistida com sucesso na planilha! Atualizando indicadores...');
+      await loadData();
+    } catch(err) {
+      console.error(err);
+    }
   }
 }
 
 // ══════════════════════════════════════════
-//  EVOLUÇÃO DO WORKFLOW: ADMINISTRADOR
+//  MONITORAMENTO E GESTÃO DE WORKFLOWS (ADMIN)
 // ══════════════════════════════════════════
-function refreshAdminIconBadge() {
-  const solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-  const pendentesCount = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento').length;
-  
-  const b = document.getElementById('sol-count-badge');
-  if(b) {
-    b.textContent = pendentesCount;
-    b.style.display = pendentesCount > 0 ? 'inline-block' : 'none';
-  }
-}
-
 function switchAdminTab(tabName) {
   currentAdminViewTab = tabName;
   document.getElementById('btn-tab-pendentes').classList.toggle('active', tabName === 'pendentes');
@@ -891,131 +978,112 @@ function switchAdminTab(tabName) {
   renderMóduloSolicitacoes();
 }
 
-function alterarStatusWorkflow(uidWorkflow, novoStatus) {
-  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
-  if (idx >= 0) {
-    solicitacoes[idx].statusGlobal = novoStatus;
-    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
-    refreshAdminIconBadge();
-    renderMóduloSolicitacoes();
-  }
-}
-
-function concluirWorkflowAdmin(uidWorkflow) {
-  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
-  if (idx >= 0) {
-    solicitacoes[idx].statusGlobal = 'Concluída';
-    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
-    alert(`🎯 Workflow ${uidWorkflow} marcado como Concluído e transferido para o Histórico!`);
-    refreshAdminIconBadge();
-    renderMóduloSolicitacoes();
-  }
-}
-
-function executaConclusaoAutomaticaLote(uidWorkflow) {
-  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
-  if (idx >= 0) {
-    solicitacoes[idx].statusGlobal = 'Concluída';
-    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
-  }
-}
-
-function executarVerificacaoInteligenteEstoque() {
-  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
-  let pendentes = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento');
+async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
+  const uniqueKey = `${idWorkflow}-${codigoItem}`;
+  const obsText = document.getElementById(`obs-admin-${uniqueKey}`).value.trim() || '—';
   
-  if (pendentes.length === 0) return;
-
-  // Mapeia códigos que ainda restam na planilha carregada
-  const codigosExistentesAtuais = new Set(RAW.map(r => r.codigo));
-  let atualizouAlgum = false;
-
-  pendentes.forEach(sol => {
-    // Verifica se TODOS os itens do lote sumiram da base ativa
-    const todosSumiram = sol.loteItens.every(item => !codigosExistentesAtuais.has(item.codigo));
+  if (novoStatus === 'Concluída' || novoStatus === 'Cancelada') {
+    if (!confirm(`Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`)) {
+      loadData();
+      return;
+    }
+  }
+  
+  try {
+    const resultado = await callAppsScriptAPI('atualizarStatusItem', {
+      idWorkflow: idWorkflow,
+      codigoItem: codigoItem,
+      statusItem: novoStatus,
+      obsAdmin: obsText
+    });
     
-    if (todosSumiram) {
-      const resposta = confirm(`📊 [Análise Inteligente de Sincronização]\n\nTodos os itens da solicitação "${sol.uidWorkflow}" (Solicitante: ${sol.solicitante}) não existem mais na base de estoque ativa.\n\nDeseja marcar automaticamente esta solicitação como "Concluída"?`);
-      if (resposta) {
-        executaConclusaoAutomaticaLote(sol.uidWorkflow);
-        atualizouAlgum = true;
-      }
+    if (resultado.workflowEncerrado) {
+      alert(`🎯 Workflow ${idWorkflow} finalizado! Todos os itens foram respondidos e o bloco foi migrado para o Histórico.`);
+    } else {
+      alert(`⚡ Status do item ${codigoItem} atualizado na planilha.`);
     }
-  });
-
-  if (atualizouAlgum) {
-    refreshAdminIconBadge();
-    if (document.getElementById('pg-solicitacoes').classList.contains('on')) {
-      renderMóduloSolicitacoes();
-    }
+    await loadData();
+  } catch(e) {
+    console.error(e);
   }
 }
 
 function renderMóduloSolicitacoes() {
   const wrapper = document.getElementById('admin-sol-wrapper');
-  const solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  const baseDados = currentAdminViewTab === 'pendentes' ? RAW_PENDENTES : RAW_HISTORICO;
   
-  // Filtra dependendo da aba ativa
-  let filtradas = [];
-  if (currentAdminViewTab === 'pendentes') {
-    filtradas = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento');
-  } else {
-    filtradas = solicitacoes.filter(s => s.statusGlobal === 'Concluída' || s.statusGlobal === 'Cancelada');
-  }
-  
-  if (filtradas.length === 0) {
+  if (baseDados.length === 0) {
     wrapper.innerHTML = `
       <div style="text-align:center; padding:60px 20px; color:var(--g4)">
         <span style="font-size:36px">📋</span>
-        <p style="margin-top:10px; font-size:13px">Nenhuma solicitação encontrada nesta seção (${currentAdminViewTab === 'pendentes' ? 'Pendentes' : 'Histórico'}).</p>
+        <p style="margin-top:10px; font-size:13px">Nenhum registro encontrado para exibição na aba corporativa.</p>
       </div>
     `;
     return;
   }
   
-  wrapper.innerHTML = filtradas.map(sol => {
-    let tRows = sol.loteItens.map(li => `
-      <tr style="border-bottom:1px solid var(--g1)">
-        <td style="padding:8px; color:var(--g5)">${li.codigo}</td>
-        <td style="padding:8px; font-weight:500">${li.produto}</td>
-        <td style="padding:8px;"><span class="bdg">${li.local}</span></td>
-        <td style="padding:8px; text-align:center">${li.qtd}</td>
-        <td style="padding:8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
-        <td style="padding:8px; font-weight:700; color:var(--bl)">${li.destino}</td>
-        <td style="padding:8px; color:var(--g4); font-size:11px; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${li.obs}">${li.obs}</td>
-      </tr>
-    `).join('');
-
-    const statusOptions = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
-    let selectStatusHTML = `
-      <select class="admin-select-status" onchange="alterarStatusWorkflow('${sol.uidWorkflow}', this.value)">
-        ${statusOptions.map(opt => `<option value="${opt}" ${sol.statusGlobal === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-      </select>
-    `;
-
-    let acoesHTML = '';
-    if (sol.statusGlobal !== 'Concluída' && sol.statusGlobal !== 'Cancelada') {
-      acoesHTML = `
-        <button class="mbtn" style="width:auto; padding:0 16px; height:30px; margin:0; background:var(--gn)" onclick="concluirWorkflowAdmin('${sol.uidWorkflow}')">
-          ✓ Concluir Destinação
-        </button>
-      `;
+  const workflowsAgrupados = {};
+  baseDados.forEach(item => {
+    if (!workflowsAgrupados[item.idWorkflow]) {
+      workflowsAgrupados[item.idWorkflow] = {
+        idWorkflow: item.idWorkflow,
+        dataSolicitacao: item.dataSolicitacao,
+        dataConclusao: item.dataConclusao || null,
+        solicitante: item.solicitante,
+        itens: []
+      };
     }
+    workflowsAgrupados[item.idWorkflow].itens.push(item);
+  });
+  
+  const listaCards = Object.values(workflowsAgrupados).sort((a,b) => b.idWorkflow.localeCompare(a.idWorkflow));
+  
+  wrapper.innerHTML = listaCards.map(wf => {
+    let tRows = wf.itens.map(li => {
+      const uniqueKey = `${wf.idWorkflow}-${li.codigoItem}`;
+      let acaoHTML = '';
+      
+      if (currentAdminViewTab === 'pendentes') {
+        const opcoes = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
+        acaoHTML = `
+          <td>
+            <select class="admin-select-status" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.value)">
+              ${opcoes.map(o => `<option value="${o}" ${li.statusItem === o ? 'selected' : ''}>${o}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <input type="text" class="cart-tx" id="obs-admin-${uniqueKey}" placeholder="Parecer técnico..." value="${li.obsAdmin || ''}" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.parentElement.previousElementSibling.querySelector('select').value)">
+          </td>
+        `;
+      } else {
+        acaoHTML = `
+          <td style="font-weight:700; color:var(--og)">${li.statusItem}</td>
+          <td style="color:var(--g5); font-style:italic">${li.obsAdmin || '—'}</td>
+        `;
+      }
+      
+      return `
+        <tr style="border-bottom:1px solid var(--g1)">
+          <td style="padding:8px; color:var(--g5)">${li.codigoItem}</td>
+          <td style="padding:8px; font-weight:500" title="${li.descricao}">${li.descricao.length > 35 ? li.descricao.slice(0,34)+'…' : li.descricao}</td>
+          <td style="padding:8px;"><span class="bdg">${li.local}</span></td>
+          <td style="padding:8px; text-align:center">${li.quantidade}</td>
+          <td style="padding:8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
+          <td style="padding:8px; font-weight:700; color:var(--bl)">${li.destino}</td>
+          <td style="padding:8px; color:var(--g4); font-size:11px;" title="${li.obsGestor}">${li.obsGestor}</td>
+          ${acaoHTML}
+        </tr>
+      `;
+    }).join('');
+
+    const subInfo = wf.dataConclusao ? ` | Finalizado em: <b>${wf.dataConclusao}</b>` : '';
 
     return `
       <div class="sol-block">
         <div class="sol-block-header">
           <div>
-            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow: ${sol.uidWorkflow}</div>
-            <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${sol.solicitante}</b> | Recebido em: ${sol.timestamp}</div>
-          </div>
-          <div style="display:flex; align-items:center; gap:10px">
-            <span class="flbl" style="margin:0; font-size:11px">Alterar Status:</span>
-            ${selectStatusHTML}
-            ${acoesHTML}
+            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${wf.idWorkflow}</div>
+            <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${wf.solicitante}</b> | Enviado em: ${wf.dataSolicitacao}${subInfo}</div>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -1028,7 +1096,9 @@ function renderMóduloSolicitacoes() {
                 <th style="padding:7px 8px; color:var(--dk); text-align:center">Qtd</th>
                 <th style="padding:7px 8px; color:var(--dk); text-align:right">Valor Total</th>
                 <th style="padding:7px 8px; color:var(--dk)">Destino</th>
-                <th style="padding:7px 8px; color:var(--dk)">Observações</th>
+                <th style="padding:7px 8px; color:var(--dk)">Obs Gestor</th>
+                <th style="padding:7px 8px; color:var(--dk)">Status Item</th>
+                <th style="padding:7px 8px; color:var(--dk)">Observações Admin (Parecer)</th>
               </tr>
             </thead>
             <tbody>
@@ -1036,12 +1106,47 @@ function renderMóduloSolicitacoes() {
             </tbody>
           </table>
         </div>
-        <div style="text-align:right; font-size:11px; color:var(--g5); margin-top:12px; font-weight:600">
-          Volumetria Total do Lote: ${sol.totalItens} item(ns) regulados
-        </div>
       </div>
     `;
   }).join('');
+}
+
+// ── AUDITORIA ASSISTIDA DE ESTOQUE VAZIO ──
+function executarVerificacaoInteligenteEstoque() {
+  if (RAW_PENDENTES.length === 0) return;
+  const codigosAtivosNaBase = new Set(RAW.map(r => r.codigo));
+  
+  const agrupado = {};
+  RAW_PENDENTES.forEach(item => {
+    if(!agrupado[item.idWorkflow]) agrupado[item.idWorkflow] = [];
+    agrupado[item.idWorkflow].push(item);
+  });
+  
+  Object.keys(agrupado).forEach(idWf => {
+    const itensLote = agrupado[idWf];
+    const todosSumiram = itensLote.every(i => !codigosAtivosNaBase.has(i.codigoItem));
+    const loteAindaAtivo = itensLote.some(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
+    
+    if (todosSumiram && loteAindaAtivo) {
+      setTimeout(async () => {
+        if (confirm(`📊 [Análise Inteligente de Sincronização]\n\nDetectamos que todos os itens pertencentes à solicitação "${idWf}" não existem mais na base ativa de estoque obsoleto.\n\nDeseja marcar automaticamente este lote como "Concluído" no sistema?`)) {
+          const primeiroPendente = itensLote.find(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
+          if (primeiroPendente) {
+            try {
+              await callAppsScriptAPI('atualizarStatusItem', {
+                idWorkflow: idWf,
+                codigoItem: primeiroPendente.codigoItem,
+                statusItem: 'Concluída',
+                obsAdmin: 'Baixa automática gerada por validação assistida de estoque vazio.'
+              });
+              alert(`🎯 Workflow ${idWf} arquivado com sucesso no Histórico.`);
+              await loadData();
+            } catch(e) { console.error(e); }
+          }
+        }
+      }, 600);
+    }
+  });
 }
 </script>
 </body>
