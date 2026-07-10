@@ -6,1147 +6,976 @@
 <title>Grupo Energia — Estoque Obsoletos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{
-  --og:#E8511A;--ogl:#FF6B35;--ogp:#FFF0EA;--ogd:rgba(232,81,26,.13);
-  --dk:#1E1E1E;--dk2:#2D2D2D;--dk3:#3A3A3A;
-  --g1:#F5F5F5;--g2:#E8E8E8;--g3:#C8C8C8;--g4:#888;--g5:#555;
-  --wh:#fff;--bl:#1A5FA8;--gn:#2EA86B;--am:#D4830A;--rd:#D43A3A;
-  --sw:220px;--hh:60px;--rad:10px;--rs:6px;
-  font-family:'Segoe UI',system-ui,sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#EEF0F4;color:var(--dk);min-height:100vh}
-
-/* ── MODAL / LOGIN ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(5px);z-index:800;display:flex;align-items:center;justify-content:center}
-.mbox{background:var(--wh);border-radius:14px;padding:36px 40px;width:390px;box-shadow:0 20px 60px rgba(0,0,0,.22);position:relative}
-.mlogo{display:block;margin:0 auto 18px;height:36px;object-fit:contain}
-.mtit{font-size:17px;font-weight:700;color:var(--dk);text-align:center;margin-bottom:3px}
-.msub{font-size:12px;color:var(--g4);text-align:center;margin-bottom:22px}
-.flbl{font-size:11px;font-weight:600;color:var(--g5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.fwrap{position:relative;margin-bottom:14px}
-.finp{width:100%;height:40px;padding:0 36px 0 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--dk);background:var(--g1);outline:none;transition:border .14s}
-.finp:focus{border-color:var(--og);background:var(--wh)}
-.feye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;opacity:.45;user-select:none}
-.feye:hover{opacity:.85}
-.ferr{font-size:11px;color:var(--rd);margin-top:-8px;margin-bottom:10px;display:none}
-.mbtn{width:100%;height:42px;border:none;border-radius:var(--rs);background:var(--og);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:background .14s;margin-top:4px}
-.mbtn:hover{background:var(--ogl)}
-.mfoot{text-align:center;font-size:11px;color:var(--g4);margin-top:14px}
-.shake{animation:shk .35s}
-@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-
-/* ── LOADING ── */
-#loading{position:fixed;inset:0;background:var(--dk2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:700;gap:16px}
-#loading img{height:40px;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
-.spin{width:32px;height:32px;border:3px solid rgba(232,81,26,.2);border-top-color:var(--og);border-radius:50%;animation:spin .75s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.ltxt{color:var(--g3);font-size:13px}
-.lerr{color:#ff8080;font-size:12px;text-align:center;max-width:340px;line-height:1.6;display:none;padding:0 20px}
-.lbtn{padding:8px 22px;background:var(--og);color:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:13px;display:none;font-weight:500;margin-top:4px}
-.lbtn:hover{background:var(--ogl)}
-
-/* ── SIDEBAR ── */
-#sb{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--dk2);display:flex;flex-direction:column;z-index:100;border-right:1px solid var(--dk3)}
-.sb-logo{padding:15px 20px 11px;border-bottom:1px solid var(--dk3)}
-.sb-logo img{height:30px;object-fit:contain;filter:brightness(0) invert(1)}
-.sb-info{padding:8px 20px 6px;font-size:11px;color:var(--g3);border-bottom:1px solid var(--dk3);line-height:1.7}
-.sb-info b{color:var(--og)}
-.upd{font-size:10px;color:var(--g4);display:flex;align-items:center;gap:5px;margin-top:2px}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--gn);animation:pulse 2s infinite}
-.dot-err{background:var(--rd)!important;animation:none!important}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sb-nav{padding:8px 0;flex:1;overflow-y:auto}
-.sbs{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--g4);padding:10px 20px 4px}
-.ni{display:flex;align-items:center;gap:9px;padding:8px 20px;font-size:13px;color:var(--g3);cursor:pointer;border-left:3px solid transparent;user-select:none;transition:background .12s,color .12s}
-.ni:hover{background:var(--dk3);color:var(--wh)}
-.ni.on{background:var(--ogd);color:var(--og);border-left-color:var(--og);font-weight:600}
-.sb-foot{padding:11px 20px;border-top:1px solid var(--dk3);font-size:11px;color:var(--g4);line-height:1.8}
-.sb-foot b{color:var(--og)}
-.author{margin-top:6px;padding-top:6px;border-top:1px solid var(--dk3);font-size:10px;color:var(--g4)}
-.author span{color:#FF9466;font-weight:600}
-
-/* ── TOPBAR ── */
-#main{margin-left:var(--sw);display:flex;flex-direction:column;min-height:100vh}
-#topbar{position:sticky;top:0;z-index:50;background:var(--wh);border-bottom:1px solid var(--g2);height:var(--hh);display:flex;align-items:center;padding:0 22px;gap:10px;justify-content:space-between}
-.tb-l .ttl{font-size:15px;font-weight:600;color:var(--dk)}
-.tb-l .tsub{font-size:11px;color:var(--g4);margin-top:1px}
-.frow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-select.fs{height:31px;padding:0 7px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:12px;background:var(--g1);cursor:pointer;outline:none;color:var(--dk);min-width:96px;transition:border .13s}
-select.fs:focus{border-color:var(--og)}
-.btn-clr{height:31px;padding:0 11px;border-radius:var(--rs);border:none;background:var(--og);color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:background .13s}
-.btn-clr:hover{background:var(--ogl)}
-.btn-sync{height:31px;padding:0 11px;border-radius:var(--rs);border:1.5px solid var(--g2);background:var(--wh);color:var(--g5);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:500;transition:border .13s,color .13s}
-.btn-sync:hover{border-color:var(--og);color:var(--og)}
-.sico{display:inline-block}
-.syncing .sico{animation:spin .6s linear infinite}
-.sync-ok{border-color:var(--gn)!important;color:var(--gn)!important}
-
-/* ── PAGES ── */
-.pg{display:none;padding:20px 22px}
-.pg.on{display:block}
-
-/* ── KPI ── */
-.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
-.kc{background:var(--wh);border-radius:var(--rad);padding:15px 17px;border:1px solid var(--g2);position:relative;overflow:hidden}
-.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.kc.og::before{background:var(--og)}.kc.bl::before{background:var(--bl)}.kc.gn::before{background:var(--gn)}.kc.am::before{background:var(--am)}
-.klbl{font-size:10px;color:var(--g4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-.kval{font-size:15px;font-weight:700;color:var(--dk);line-height:1.2;font-variant-numeric:tabular-nums;word-break:break-all}
-.ksub{font-size:11px;color:var(--g4);margin-top:4px}
-
-/* ── LAYOUT ── */
-.row2e{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
-.card{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px}
-.cardf{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px;margin-bottom:16px}
-.ctit{font-size:13px;font-weight:600;color:var(--dk);margin-bottom:3px}
-.csub{font-size:11px;color:var(--g4);margin-bottom:11px}
-.cw{position:relative;width:100%}
-
-/* ── ALERT ── */
-.alert{display:flex;align-items:flex-start;gap:10px;background:var(--ogp);border:1px solid rgba(232,81,26,.18);border-radius:var(--rad);padding:11px 15px;margin-bottom:16px}
-.alert-t{font-size:13px;color:var(--dk);line-height:1.5}
-.alert-t b{color:var(--og)}
-
-/* ── TABLE ── */
-.tw{overflow:auto;border-radius:var(--rad);border:1px solid var(--g2);background:var(--wh);margin-bottom:16px}
-.th2{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--g2);gap:8px;flex-wrap:wrap}
-.tsch{height:30px;padding:0 10px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:12px;outline:none;background:var(--g1);width:230px;transition:border .13s}
-.tsch:focus{border-color:var(--og)}
-table{width:100%;border-collapse:collapse;min-width:820px;font-size:12px}
-thead th{background:var(--dk2);color:#fff;padding:9px 11px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;cursor:pointer;user-select:none;white-space:nowrap;transition:background .1s}
-thead th:hover{background:var(--dk3)}
-thead th.sa::after{content:' ▲';font-size:9px;opacity:.65}
-thead th.sd::after{content:' ▼';font-size:9px;opacity:.65}
-tbody tr{border-bottom:1px solid var(--g2);transition:background .09s}
-tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:var(--ogp)}
-td{padding:7px 11px;color:var(--dk);vertical-align:middle}
-td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
-.bdg{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;background:#EBEBEB;color:#555}
-.tfoot{padding:8px 17px;font-size:11px;color:var(--g4);border-top:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center}
-.tfoot b{color:var(--og)}
-.tag-old{color:var(--rd);font-weight:700}
-.tag-mid{color:var(--am);font-weight:600}
-.tag-ok{color:var(--gn);font-weight:600}
-
-/* ── ELEMENTOS EXCLUSIVOS DE GOVERNANÇA ── */
-.chk-col { width: 45px; text-align: center !important; }
-.chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
-.cart-counter-badge { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9px; margin-left: auto; }
-#cart-float-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; }
-.cart-sel { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 0 4px; background: var(--g1); outline: none; }
-.cart-sel:focus { border-color: var(--og); background: #fff; }
-.cart-tx { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 11px; padding: 0 6px; background: var(--g1); outline: none; }
-.cart-tx:focus { border-color: var(--og); background: #fff; }
-.btn-del-cart { border: none; background: transparent; color: var(--rd); cursor: pointer; font-weight: 600; font-size: 11px; }
-.btn-del-cart:hover { text-decoration: underline; }
-.sol-block { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; }
-.sol-block-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
-
-/* ── ABAS INTERNAS ADMIN ── */
-.admin-tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid var(--g2); margin-bottom: 16px; }
-.admin-tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--g4); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-.admin-tab-btn:hover { color: var(--dk); }
-.admin-tab-btn.active { color: var(--og); border-bottom-color: var(--og); }
-.admin-select-status { height: 30px; padding: 0 6px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; background: var(--g1); color: var(--dk); outline: none; cursor: pointer; font-weight: 600; }
-.admin-select-status:focus { border-color: var(--bl); }
-
-/* Bloqueador de Tela Técnico */
-.glass-loader { position: fixed; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 10px; }
-</style>
+:root{\r
+  --og:#E8511A;--ogl:#FF6B35;--ogp:#FFF0EA;--ogd:rgba(232,81,26,.13);\r
+  --dk:#1E1E1E;--dk2:#2D2D2D;--dk3:#3A3A3A;\r
+  --g1:#F5F5F5;--g2:#E8E8E8;--g3:#C8C8C8;--g4:#888;--g5:#555;\r
+  --wh:#fff;--bl:#1A5FA8;--gn:#2EA86B;--am:#D4830A;--rd:#D43A3A;\r
+  --sw:220px;--hh:60px;--rad:10px;--rs:6px;\r
+  font-family:'Segoe UI',system-ui,sans-serif;\r
+}\r
+*{box-sizing:border-box;margin:0;padding:0}\r
+body{background:#EEF0F4;color:#333;display:flex;height:100vh;overflow:hidden}\r
+\r
+/* SIDEBAR */\r
+.sb{width:var(--sw);background:var(--dk);color:var(--g1);display:flex;flex-direction:column;transition:all .3s ease;z-index:10}\r
+.sb-hd{height:var(--hh);display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--dk2);gap:10px}\r
+.sb-hd .lg{width:32px;height:32px;background:var(--og);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--wh);font-size:18px}\r
+.sb-hd h1{font-size:16px;font-weight:600;white-space:nowrap;opacity:1;transition:opacity .2s}\r
+.sb-mn{flex:1;padding:20px 0;display:flex;flex-direction:column;gap:5px}\r
+.sb-i{display:flex;align-items:center;padding:12px 20px;color:var(--g3);text-decoration:none;gap:15px;font-size:14px;border-left:4px solid transparent;cursor:pointer;transition:all .2s}\r
+.sb-i:hover{background:var(--dk2);color:var(--wh)}\r
+.sb-i.act{background:var(--dk3);color:var(--wh);border-left-color:var(--og)}\r
+.sb-i svg{width:20px;height:20px;fill:currentColor;flex-shrink:0}\r
+.sb-ft{padding:15px 20px;border-top:1px solid var(--dk2);font-size:12px;color:var(--g4);display:flex;flex-direction:column;gap:5px}\r
+.u-inf{display:flex;align-items:center;gap:10px;color:var(--g2);font-weight:500;margin-bottom:5px}\r
+.u-inf .av{width:28px;height:28px;background:var(--g5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--wh)}\r
+.lo-b{color:var(--rd);cursor:pointer;text-decoration:underline;display:inline-block}\r
+\r
+/* MAIN CONTENT */\r
+.ctr{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}\r
+.hd{height:var(--hh);background:var(--wh);display:flex;align-items:center;justify-content:space-between;padding:0 30px;box-shadow:0 1px 4px rgba(0,0,0,0.05);z-index:5}\r
+.hd-l{display:flex;align-items:center;gap:15px}\r
+.tgl{cursor:pointer;background:none;border:none;color:var(--g5);display:flex;align-items:center;justify-content:center}\r
+.tgl svg{width:24px;height:24px;fill:currentColor}\r
+.hd h2{font-size:18px;font-weight:600;color:var(--dk)}\r
+.hd-r{display:flex;align-items:center;gap:15px}\r
+\r
+/* BUTTONS */\r
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}\r
+.btn-p{background:var(--og);color:var(--wh)}\r
+.btn-p:hover{background:var(--ogl)}\r
+.btn-s{background:var(--g2);color:var(--g5)}\r
+.btn-s:hover{background:var(--g3);color:var(--dk)}\r
+.btn-o{background:transparent;border:1px solid var(--g3);color:var(--g5)}\r
+.btn-o:hover{background:var(--g1);border-color:var(--g4);color:var(--dk)}\r
+.btn-sm{padding:4px 8px;font-size:12px;border-radius:4px}\r
+.btn-gn{background:var(--gn);color:var(--wh)}\r
+.btn-gn:hover{background:#258756}\r
+.btn-rd{background:var(--rd);color:var(--wh)}\r
+.btn-rd:hover{background:#b83232}\r
+\r
+/* VIEWS / SCREENS */\r
+.vw{flex:1;padding:30px;overflow-y:auto;display:none;flex-direction:column;gap:25px}\r
+.vw.act{display:flex}\r
+\r
+/* DASHBOARD KPls */\r
+.kpi-r{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}\r
+.kpi{background:var(--wh);padding:20px;border-radius:var(--rad);box-shadow:0 2px 8px rgba(0,0,0,0.02);display:flex;align-items:center;justify-content:between;position:relative;overflow:hidden}\r
+.kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}\r
+.kpi.p::after{background:var(--bl)}\r
+.kpi.a::after{background:var(--am)}\r
+.kpi.g::after{background:var(--gn)}\r
+.kpi.r::after{background:var(--rd)}\r
+.kpi-d h4{font-size:12px;color:var(--g4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}\r
+.kpi-d p{font-size:22px;font-weight:700;color:var(--dk)}\r
+.kpi-ic{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--g5)}\r
+.kpi.p .kpi-ic{background:rgba(26,95,168,0.1);color:var(--bl)}\r
+.kpi.a .kpi-ic{background:rgba(212,131,10,0.1);color:var(--am)}\r
+.kpi.g .kpi-ic{background:rgba(46,168,107,0.1);color:var(--gn)}\r
+.kpi.r .kpi-ic{background:rgba(212,58,58,0.1);color:var(--rd)}\r
+.kpi-ic svg{width:22px;height:22px;fill:currentColor}\r
+\r
+/* CHARTS GRID */\r
+.ch-g{display:grid;grid-template-columns:2fr 1fr;gap:20px}\r
+@media(max-width:1024px){.ch-g{grid-template-columns:1fr}}\r
+.ch-bx{background:var(--wh);padding:20px;border-radius:var(--rad);box-shadow:0 2px 8px rgba(0,0,0,0.02);display:flex;flex-direction:column;gap:15px}\r
+.ch-hd{display:flex;align-items:center;justify-content:between}\r
+.ch-hd h3{font-size:14px;font-weight:600;color:var(--dk)}\r
+.ch-ct{position:relative;flex:1;min-height:220px;display:flex;align-items:center;justify-content:center}\r
+\r
+/* FILTERS & CONTROLS */\r
+.f-bx{background:var(--wh);padding:15px 20px;border-radius:var(--rad);box-shadow:0 2px 8px rgba(0,0,0,0.02);display:flex;flex-wrap:wrap;gap:15px;align-items:center}\r
+.f-g{display:flex;flex-direction:column;gap:4px;flex:1;min-width:150px}\r
+.f-g label{font-size:11px;font-weight:600;color:var(--g5);text-transform:uppercase}\r
+.f-g select, .f-g input{padding:8px 12px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;color:var(--dk);background:var(--wh);outline:none;transition:border .2s}\r
+.f-g select:focus, .f-g input:focus{border-color:var(--og)}\r
+.f-act{display:flex;gap:10px;align-items:flex-end;height:100%;padding-top:19px}\r
+\r
+/* TABLES */\r
+.t-bx{background:var(--wh);border-radius:var(--rad);box-shadow:0 2px 8px rgba(0,0,0,0.02);overflow:hidden;display:flex;flex-direction:column}\r
+.t-hd{padding:15px 20px;border-bottom:1px solid var(--g2);display:flex;align-items:center;justify-content:between;background:var(--wh)}\r
+.t-hd h3{font-size:14px;font-weight:600;color:var(--dk)}\r
+.t-sc{overflow-x:auto}\r
+table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}\r
+th{background:var(--g1);padding:12px 20px;font-weight:600;color:var(--g5);text-transform:uppercase;font-size:11px;letter-spacing:0.5px;border-bottom:1px solid var(--g2)}\r
+td{padding:12px 20px;border-bottom:1px solid var(--g2);color:var(--g5);vertical-align:middle;line-height:1.4}\r
+tr:last-child td{border-bottom:none}\r
+tr:hover td{background:rgba(238,240,244,0.3)}\r
+td strong{color:var(--dk);font-weight:600}\r
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase}\r
+.badge.p{background:rgba(26,95,168,0.1);color:var(--bl)}\r
+.badge.a{background:rgba(212,131,10,0.1);color:var(--am)}\r
+.badge.g{background:rgba(46,168,107,0.1);color:var(--gn)}\r
+.badge.r{background:rgba(212,58,58,0.1);color:var(--rd)}\r
+\r
+/* UTILS */\r
+.d-none{display:none !important}\r
+.txt-r{text-align:right}\r
+.txt-c{text-align:center}\r
+.fw-600{font-weight:600}\r
+.c-og{color:var(--og)}\r
+.c-gn{color:var(--gn)}\r
+\r
+/* LOGIN MODAL */\r
+.lg-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(30,30,30,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);transition:all .3s}\r
+.lg-bx{background:var(--wh);padding:40px;border-radius:var(--rad);box-shadow:0 10px 30px rgba(0,0,0,0.2);width:100%;max-width:400px;display:flex;flex-direction:column;gap:20px;position:relative}\r
+.lg-hd{text-align:center;display:flex;flex-direction:column;gap:8px}\r
+.lg-hd .lg-l{width:48px;height:48px;background:var(--og);border-radius:var(--rad);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--wh);font-size:24px;margin:0 auto}\r
+.lg-hd h2{font-size:20px;font-weight:700;color:var(--dk)}\r
+.lg-hd p{font-size:13px;color:var(--g4)}\r
+.lg-f{display:flex;flex-direction:column;gap:15px}\r
+.ip-g{display:flex;flex-direction:column;gap:5px}\r
+.ip-g label{font-size:12px;font-weight:600;color:var(--g5)}\r
+.ip-w{position:relative;display:flex;align-items:center}\r
+.ip-w input{width:100%;padding:10px 14px;border:1px solid var(--g3);border-radius:var(--rs);font-size:14px;outline:none;transition:border .2s}\r
+.ip-w input:focus{border-color:var(--og)}\r
+.ip-w .ey{position:absolute;right:14px;cursor:pointer;color:var(--g4);display:flex;align-items:center;justify-content:center}\r
+.ip-w .ey:hover{color:var(--g5)}\r
+.ip-w .ey svg{width:18px;height:18px;fill:currentColor}\r
+.lg-er{color:var(--rd);font-size:12px;text-align:center;font-weight:500;min-height:18px}\r
+\r
+/* MINI CART OVERLAY FLOATER */\r
+.fl-c{position:fixed;bottom:30px;right:30px;background:var(--dk);color:var(--wh);padding:15px 25px;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;align-items:center;gap:20px;z-index:900;cursor:pointer;transition:transform .2s}\r
+.fl-c:hover{transform:scale(1.03);background:var(--dk2)}\r
+.fl-c-inf{display:flex;flex-direction:column}\r
+.fl-c-inf span:first-child{font-size:11px;color:var(--g3);text-transform:uppercase;letter-spacing:0.5px}\r
+.fl-c-inf span:last-child{font-size:15px;font-weight:700;color:var(--og)}\r
+.fl-c-ic{width:36px;height:36px;background:var(--dk3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--wh);position:relative}\r
+.fl-c-ic svg{width:18px;height:18px;fill:currentColor}\r
+.fl-c-bd{position:absolute;top:-4px;right:-4px;background:var(--og);color:var(--wh);font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}\r
+\r
+/* LOADING SPINNER ELEMENT */\r
+.ld-ov{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(238,240,244,0.7);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(1px)}\r
+.ld-ov.act{display:flex}\r
+.spn{width:40px;height:40px;border:4px solid var(--g2);border-top-color:var(--og);border-radius:50%;animation:rot .8s linear infinite}\r
+@keyframes rot{to{transform:rotate(360deg)}}\r
+\r
+/* SIDEBAR MINI STATE */\r
+.sb.mni{width:64px}\r
+.sb.mni .sb-hd h1, .sb.mni .sb-ft, .sb.mni .sb-i span{display:none}\r
+.sb.mni .sb-hd{padding:0;justify-content:center}\r
+.sb.mni .sb-i{padding:12px 0;justify-content:center;border-left:none;border-bottom:3px solid transparent}\r
+.sb.mni .sb-i.act{border-bottom-color:var(--og);background:var(--dk3)}\n</style>
 </head>
 <body>
 
-<div class="glass-loader" id="api-glass" style="display:none">
-  <div class="spin"></div>
-  <div style="font-weight:600; color:var(--dk); font-size:14px;" id="api-glass-text">Processando na Planilha...</div>
-</div>
-
-<div class="overlay" id="login-screen">
-  <div class="mbox">
-    <img class="mlogo" src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
-    <div class="mtit">Estoque de Obsoletos</div>
-    <div class="msub">Use as credenciais autorizadas pela empresa</div>
-    <div class="flbl">Usuário</div>
-    <div class="fwrap">
-      <input class="finp" type="text" id="luser" placeholder="Digite seu usuário" style="padding:0 12px">
+<div id="loginOverlay" class="lg-ov">
+  <div class="lg-bx">
+    <div class="lg-hd">
+      <div class="lg-l">E</div>
+      <h2>Grupo Energia</h2>
+      <p>Gestão de Estoque Obsoleto & Destinações</p>
     </div>
-    <div class="flbl">Senha de acesso</div>
-    <div class="fwrap">
-      <input class="finp" type="password" id="lpwd" placeholder="••••••••">
-      <span class="feye" onclick="eye('lpwd',this)">👁</span>
-    </div>
-    <div class="ferr" id="lerr">Usuário ou senha incorretos.</div>
-    <button class="mbtn" onclick="doLogin()">Entrar</button>
-    <div class="mfoot">Grupo Energia · Uso interno de governança</div>
-  </div>
-</div>
-
-<div id="loading" style="display:none">
-  <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
-  <div class="spin"></div>
-  <div class="ltxt" id="ltxt">Conectando à planilha corporativa...</div>
-  <div class="lerr" id="lerr2"></div>
-  <button class="lbtn" id="lbtn" onclick="loadData()">↺ Tentar novamente</button>
-</div>
-
-<nav id="sb" style="display:none">
-  <div class="sb-logo"><img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'"></div>
-  <div class="sb-info">
-    📦 <b id="ref-date">—</b>
-    <div class="upd"><span class="dot" id="sdot"></span><span id="upd-t">sincronizando...</span></div>
-  </div>
-  <div class="sb-nav">
-    <div class="sbs">Navegação</div>
-    <div class="ni on" data-pg="visao">📊 Visão Geral</div>
-    <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
-    <div class="ni" id="menu-carrinho" data-pg="carrinho" style="display:none">🛒 Carrinho <span class="cart-counter-badge" id="cart-count-badge">0</span></div>
-    <div class="ni" id="menu-solicitacoes" data-pg="solicitacoes" style="display:none">📋 Solicitações de Destinação <span class="cart-counter-badge" id="sol-count-badge" style="background:var(--rd)">0</span></div>
-    <div class="sbs admin-only" style="margin-top:4px">Dados</div>
-    <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Planilha Original</div>
-  </div>
-  <div class="sb-foot">
-    Painel interno <b>Grupo Energia</b><br>Uso confidencial
-    <div class="author">✍️ Elaborado por:<br><span>Murilo Henrique Roberto</span></div>
-    <div id="role-badge" style="margin-top:8px;padding-top:7px;border-top:1px solid var(--dk3);font-size:11px;font-weight:600"></div>
-  </div>
-</nav>
-
-<div id="main" style="display:none">
-  <div id="topbar">
-    <div class="tb-l">
-      <div class="ttl" id="ttl">Visão Geral</div>
-      <div class="tsub" id="tsub">Resumo do estoque obsoleto por local</div>
-    </div>
-    <div class="frow">
-      <select class="fs" id="floc" onchange="applyF()"><option value="">Local: Todos</option></select>
-      <button class="btn-clr" onclick="resetF()">↺ Limpar</button>
-      <button class="btn-sync" id="bsync" onclick="loadData(true)"><span class="sico">🔄</span>&nbsp;Sincronizar</button>
-    </div>
-  </div>
-
-  <div id="pg-visao" class="pg on">
-    <div class="alert"><span style="font-size:19px;flex-shrink:0">⚡</span><span class="alert-t" id="atxt">Carregando...</span></div>
-    <div class="kgrid">
-      <div class="kc og"><div class="klbl">📦 Valor Total Obsoleto</div><div class="kval" id="k1">—</div><div class="ksub" id="k1s">—</div></div>
-      <div class="kc bl"><div class="klbl">📊 % sobre Saldo Total</div><div class="kval" id="k2">—</div><div class="ksub" id="k2s">—</div></div>
-      <div class="kc am"><div class="klbl">🏢 Local Mais Crítico</div><div class="kval" id="k3">—</div><div class="ksub" id="k3s">—</div></div>
-      <div class="kc gn"><div class="klbl">⏳ Item Mais Antigo</div><div class="kval" id="k4">—</div><div class="ksub" id="k4s">—</div></div>
-    </div>
-    <div class="row2e">
-      <div class="card"><div class="ctit">Valor Obsoleto por Local</div><div class="csub">Distribuição do valor parado</div><div class="cw" style="height:250px"><canvas id="c1"></canvas></div></div>
-      <div class="card"><div class="ctit">% do Saldo que é Obsoleto</div><div class="csub">Obsoleto ÷ Saldo total de cada local</div><div class="cw" style="height:250px"><canvas id="c2"></canvas></div></div>
-    </div>
-    <div class="cardf">
-      <div class="ctit">Obsoleto vs. Saldo por Local de Estoque</div>
-      <div class="csub">Quanto o estoque obsoleto representa do saldo total de cada local</div>
-      <div id="tb-loc"></div>
-    </div>
-  </div>
-
-  <div id="pg-itens" class="pg">
-    <div class="tw">
-      <div class="th2">
-        <div><div class="ctit">Itens em Estoque Obsoleto</div><div class="csub" id="tcnt">—</div></div>
-        <input class="tsch" type="text" placeholder="🔍 Buscar código, produto, local..." oninput="ftbl(this.value)" id="tsrch">
+    <div class="lg-f">
+      <div class="ip-g">
+        <label>Chave de Acesso Corporativa</label>
+        <div class="ip-w">
+          <input type="password" id="passInput" placeholder="Insira seu token de acesso..." onkeydown="if(event.key==='Enter') doLogin()">
+          <span class="ey" onclick="eye()">
+            <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </span>
+        </div>
       </div>
-      <div style="max-height:560px;overflow-y:auto">
+      <div id="loginError" class="lg-er"></div>
+      <button class="btn btn-p" style="justify-content:center; padding:12px;" onclick="doLogin()">Entrar no Sistema</button>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar" class="sb d-none">
+  <div class="sb-hd">
+    <div class="lg">E</div>
+    <h1>Grupo Energia</h1>
+  </div>
+  <div class="sb-mn">
+    <div id="menu-dash" class="sb-i act" onclick="switchTab('dash')">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Dashboard Geral</span>
+    </div>
+    <div id="menu-est" class="sb-i" onclick="switchTab('est')">
+      <svg viewBox="0 0 24 24"><path d="M4 10h3v7H4zm6.5 0h3v7h-3zM2 19h20v2H2zm15-9h3v7h-3zm-5-6L2 9v2h20V9z"/></svg>
+      <span>Estoque Obsoleto</span>
+    </div>
+    <div id="menu-cart" class="sb-i d-none" onclick="switchTab('cart')">
+      <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.9 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      <span>Meu Carrinho</span>
+    </div>
+    <div id="menu-adm" class="sb-i d-none" onclick="switchTab('adm')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      <span>Análise Solicitações</span>
+    </div>
+    <div id="menu-his" class="sb-i" onclick="switchTab('his')">
+      <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      <span>Histórico Geral</span>
+    </div>
+  </div>
+  <div class="sb-ft">
+    <div class="u-inf">
+      <div id="userAvatar" class="av">U</div>
+      <span id="userLabel">Usuário</span>
+    </div>
+    <div>Perfil: <strong id="perfilLabel">—</strong></div>
+    <div class="lo-b" onclick="doLogout()">Sair do Sistema</div>
+  </div>
+</div>
+
+<div class="ctr">
+  <div id="globalLoader" class="ld-ov"><div class="spn"></div></div>
+
+  <div class="hd">
+    <div class="hd-l">
+      <button class="tgl" onclick="tglSb()">
+        <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      </button>
+      <h2 id="viewTitle">Dashboard Geral</h2>
+    </div>
+    <div class="hd-r">
+      <button class="btn btn-o" onclick="syncData()">
+        <svg style="width:16px;height:16px;fill:currentColor;vertical-align:middle;margin-top:-2px" viewBox="0 0 24 24"><path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
+        Sincronizar Planilha
+      </button>
+    </div>
+  </div>
+
+  <div id="view-dash" class="vw act">
+    <div class="kpi-r">
+      <div class="kpi p"><div class="kpi-d"><h4>Total Itens OCIOSOS</h4><p id="kpi-tot-itens">0</p></div><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg></div></div>
+      <div class="kpi a"><div class="kpi-d"><h4>Valor Total OCIOSO</h4><p id="kpi-val-tot">R$ 0,00</p></div><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.2c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div></div>
+      <div class="kpi g"><div class="kpi-d"><h4>Destinados (Mês)</h4><p id="kpi-dest-qtd">0</p></div><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div></div>
+      <div class="kpi r"><div class="kpi-d"><h4>Aguardando Análise</h4><p id="kpi-pend-qtd">0</p></div><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div></div>
+    </div>
+    <div class="ch-g">
+      <div class="ch-bx">
+        <div class="ch-hd"><h3>Distribuição Financeira por Depósito / Local</h3></div>
+        <div class="ch-ct"><canvas id="chartLocal"></canvas></div>
+      </div>
+      <div class="ch-bx">
+        <div class="ch-hd"><h3>Status de Destinação</h3></div>
+        <div class="ch-ct"><canvas id="chartStatus"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-est" class="vw">
+    <div class="f-bx">
+      <div class="f-g"><label>Pesquisar Produto</label><input type="text" id="f-est-term" placeholder="Código ou descrição..." oninput="filterEstoque()"></div>
+      <div class="f-g"><label>Local / Depósito</label><select id="f-est-loc" onchange="filterEstoque()"><option value="">Todos os Locais</option></select></div>
+      <div class="f-g"><label>Classificação Curva</label><select id="f-est-curv" onchange="filterEstoque()"><option value="">Todas</option><option value="A">Curva A</option><option value="B">Curva B</option><option value="C">Curva C</option></select></div>
+      <div class="f-act"><button class="btn btn-s" onclick="clearFiltersEstoque()">Limpar Filtros</button></div>
+    </div>
+    <div class="t-bx">
+      <div class="t-hd"><h3>Relação de Itens Ociosos em Estoque</h3></div>
+      <div class="t-sc">
         <table>
-          <thead><tr>
-            <th class="chk-col" id="th-master-chk" style="display:none"><input type="checkbox" class="chk-box" id="chk-master" onchange="selectAllVisible(this)"></th>
-            <th onclick="srt('codigo')">Código</th>
-            <th onclick="srt('produto')">Produto</th>
-            <th onclick="srt('local')">Local</th>
-            <th onclick="srt('valorUnit')">Valor Unit.</th>
-            <th onclick="srt('qtd')">Qtd</th>
-            <th onclick="srt('valorTotal')">Valor Total</th>
-            <th onclick="srt('ultimaSaida')">Última Saída</th>
-            <th onclick="srt('diasParado')">Dias Parado</th>
-          </tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-      <div class="tfoot"><span id="tfl">—</span><b>Grupo Energia — Estoque Obsoletos</b></div>
-    </div>
-  </div>
-
-  <div id="pg-carrinho" class="pg">
-    <div class="tw">
-      <div class="th2">
-        <div><div class="ctit">Carrinho de Destinação Atual</div><div class="csub">Revise e configure o destino de cada item temporário antes de enviar ao administrador</div></div>
-      </div>
-      <div style="max-height:500px;overflow-y:auto">
-        <table style="min-width:100%">
           <thead>
-            <tr style="background:var(--dk2); color:#fff">
-              <th style="padding:9px 11px; font-size:10px">Código</th>
-              <th style="padding:9px 11px; font-size:10px">Produto</th>
-              <th style="padding:9px 11px; font-size:10px">Local</th>
-              <th style="padding:9px 11px; font-size:10px; text-align:center">Qtd</th>
-              <th style="padding:9px 11px; font-size:10px; text-align:right">Valor Total</th>
-              <th style="padding:9px 11px; font-size:10px; width:170px">Destino Definido</th>
-              <th style="padding:9px 11px; font-size:10px; width:220px">Observações adicionais</th>
-              <th style="padding:9px 11px; font-size:10px; text-align:center; width:70px">Ações</th>
+            <tr>
+              <th style="width:40px" class="txt-c">Selec</th>
+              <th>Código</th>
+              <th>Descrição do Material</th>
+              <th>Localização</th>
+              <th class="txt-r">Qtd Disp.</th>
+              <th class="txt-r">Valor Unit.</th>
+              <th class="txt-r">Valor Total</th>
             </tr>
           </thead>
-          <tbody id="cart-tbody"></tbody>
+          <tbody id="tableEstoqueBody"></tbody>
         </table>
       </div>
-      <div class="tfoot" style="padding:15px 17px; background:var(--g1); display:flex; justify-content:space-between; align-items:center;">
-        <div>Volumetria do Lote: <b id="cart-qty-summary">0</b> item(ns) regulados</div>
-        <button class="mbtn" style="width:auto; padding:0 24px; margin:0; height:38px;" onclick="dispatchLoteDestinacao()">Solicitar Destino</button>
+    </div>
+  </div>
+
+  <div id="view-cart" class="vw">
+    <div class="t-bx">
+      <div class="t-hd">
+        <h3>Materiais Selecionados para Destinação</h3>
+        <button class="btn btn-rd btn-sm" onclick="clearCartCompletely()">Esvaziar Carrinho</button>
+      </div>
+      <div class="t-sc">
+        <table>
+          <thead>
+            <tr>
+              <th>Código / Produto</th>
+              <th style="width:120px" class="txt-c">Qtd Desejada</th>
+              <th>Local Origem</th>
+              <th>Destino Recomendado</th>
+              <th>Observações / Justificativa</th>
+              <th style="width:60px" class="txt-c">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tableCartBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;align-items:center;background:var(--wh);padding:20px;border-radius:var(--rad);box-shadow:0 2px 8px rgba(0,0,0,0.02)">
+      <div>Total do Lote: <strong id="cartTotalLabel" style="font-size:16px;color:var(--og)">R$ 0,00</strong></div>
+      <button class="btn btn-p" style="padding:12px 24px" onclick="dispatchLoteDestinacao()">Submeter Solicitação de Destinação</button>
+    </div>
+  </div>
+
+  <div id="view-adm" class="vw">
+    <div class="t-bx">
+      <div class="t-hd"><h3>Solicitações Pendentes de Validação Administrativa</h3></div>
+      <div class="t-sc">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th class="txt-c">Qtd</th>
+              <th>Origem / Solicitante</th>
+              <th>Destino Sugerido</th>
+              <th style="width:380px">Ações Governança</th>
+            </tr>
+          </thead>
+          <tbody id="tableAdminBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div id="pg-solicitacoes" class="pg">
-    <div class="admin-tabs-nav">
-      <button class="admin-tab-btn active" id="btn-tab-pendentes" onclick="switchAdminTab('pendentes')">Pendentes</button>
-      <button class="admin-tab-btn" id="btn-tab-historico" onclick="switchAdminTab('historico')">Histórico de Destinações</button>
+  <div id="view-his" class="vw">
+    <div class="f-bx">
+      <div class="f-g"><label>Filtrar Histórico</label><input type="text" id="f-his-term" placeholder="Pesquisar lote, código..." oninput="filterHistorico()"></div>
+      <div class="f-act"><button class="btn btn-s" onclick="document.getElementById('f-his-term').value='';filterHistorico()">Limpar</button></div>
     </div>
-    <div id="admin-sol-wrapper"></div>
+    <div class="t-bx">
+      <div class="t-hd"><h3>Log de Auditoria e Destinações Consolidadas</h3></div>
+      <div class="t-sc">
+        <table>
+          <thead>
+            <tr>
+              <th>Workflow</th>
+              <th>Data Ação</th>
+              <th>Código / Material</th>
+              <th class="txt-r">Qtd</th>
+              <th>Destino Final Aplicado</th>
+              <th>Responsável Admin</th>
+            </tr>
+          </thead>
+          <tbody id="tableHistoricoBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
 </div>
 
-<div id="cart-float-bar">
-  <div>⚡ <b id="cart-float-count">0</b> item(ns) marcados para encaminhamento</div>
-  <button class="mbtn" style="width:auto; padding:0 20px; height:34px; margin:0;" onclick="pushSelectedToCart()">Adicionar ao Carrinho</button>
+<div id="floatingCart" class="fl-c d-none" onclick="switchTab('cart')">
+  <div class="fl-c-inf"><span>Carrinho Ativo</span><span id="fl-cart-val">R$ 0,00</span></div>
+  <div class="fl-c-ic">
+    <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.9 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    <div id="fl-cart-badge" class="fl-c-bd">0</div>
+  </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════
-//  CONFIGURAÇÃO INTEGRAL DE PRODUTIVIDADE
-// ══════════════════════════════════════════
-const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
-const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
-const URL_SALDO     = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
-const SHEET_URL     = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
+// =========================================================================
+// ENDPOINTS DA INTEGRACAO HIDRIDA (CSV PARA LEITURA / SCRIPT PARA ESCRITA)
+// =========================================================================
+const URL_OBSOLETOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ/pub?gid=0&single=true&output=csv";
+const URL_SALDO     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ/pub?gid=2105156475&single=true&output=csv";
+const URL_PENDENTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ/pub?gid=1243460569&single=true&output=csv";
+const URL_HISTORICO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ/pub?gid=94530698&single=true&output=csv";
 
-// Endpoints exatos configurados via GIDs fornecidos
-const URL_PENDENTES = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=1243460569&single=true&output=csv`; 
-const URL_HISTORICO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=94530698&single=true&output=csv`;
+// URL do seu Google Apps Script embutido na Planilha Principal (Publicado como Web App - Qualquer um)
+const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycby-AZ-0lCCS9m8x-wHMCFdWXz4cPh0jgkGQqBMr0KOEeNxdCwkvlfkexEpZ4OFDWLTu/exec";
 
-// Macro Web App unificada do Google Apps Script
-const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycby-AZ-0lCCS9m8x-wHMCFdWXz4cPh0jgkGQqBMr0KOEeNxdCwkvlfkexEpZ4OFDWLTu/exec';
-
-const AUTH_ADMIN_USER  = 'admin';
-const AUTH_ADMIN_PWD   = 'admin@energia';
-const AUTH_VIEW_USER   = 'viewer';
-const AUTH_VIEW_PWD    = 'energia2025';
-const AUTH_GEST_USER   = 'gestor';
-const AUTH_GEST_PWD    = 'gestor2026';
-
-let currentRole = null;
-let itemCheckState = {};
-let currentAdminViewTab = 'pendentes';
-
-let RAW_PENDENTES = [];
-let RAW_HISTORICO = [];
-
-// ── AUTENTICAÇÃO E PERMISSÕES ──────────────
-function doLogin(){
-  const user = document.getElementById('luser').value.trim();
-  const pwd  = document.getElementById('lpwd').value;
-  
-  if(user === AUTH_ADMIN_USER && pwd === AUTH_ADMIN_PWD){
-    currentRole = 'admin';
-  } else if(user === AUTH_VIEW_USER && pwd === AUTH_VIEW_PWD){
-    currentRole = 'viewer';
-  } else if(user === AUTH_GEST_USER && pwd === AUTH_GEST_PWD){
-    currentRole = 'gestor';
-  } else {
-    document.getElementById('lerr').style.display = 'block';
-    const b = document.querySelector('#login-screen .mbox');
-    b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
-    document.getElementById('lpwd').value = '';
-    return;
-  }
-  
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('loading').style.display = 'flex';
-  configureProfileMenus();
-  loadData();
-}
-
-function configureProfileMenus(){
-  const isAdmin = currentRole === 'admin';
-  const isGestor = currentRole === 'gestor';
-  
-  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = isAdmin ? '' : 'none');
-  document.getElementById('menu-carrinho').style.display = isGestor ? 'flex' : 'none';
-  document.getElementById('menu-solicitacoes').style.display = isAdmin ? 'flex' : 'none';
-  document.getElementById('th-master-chk').style.display = isGestor ? '' : 'none';
-  
-  const b = document.getElementById('role-badge');
-  if(b){
-    if(isAdmin) { b.textContent = '👑 Administrador'; b.style.color = 'var(--og)'; }
-    else if(isGestor) { b.textContent = '💼 Gestor'; b.style.color = 'var(--bl)'; }
-    else { b.textContent = '👤 Visualizador'; b.style.color = 'var(--gn)'; }
-  }
-  refreshCartIconBadge();
-}
-
-function eye(id, el){
-  const i = document.getElementById(id);
-  i.type = i.type==='password' ? 'text' : 'password';
-  el.textContent = i.type==='password' ? '👁' : '🙈';
-}
-
-document.getElementById('lpwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('luser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-
-function openSheet(){ if (currentRole === 'admin') window.open(SHEET_URL, '_blank'); }
-
-// ══════════════════════════════════════════
-//  ALGORITMOS DE LEITURA E PARSE CSV DE ALTA VELOCIDADE
-// ══════════════════════════════════════════
-let RAW=[], FILT=[], SALDO={}, sk='valorTotal', sd=-1;
-
-const fBRL = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fAX   = v => v>=1e6 ? 'R$'+(v/1e6).toFixed(1)+'M' : v>=1e3 ? 'R$'+(v/1e3).toFixed(0)+'K' : 'R$'+v.toFixed(0);
-
-const CL = ['#E8511A','#1A5FA8','#2EA86B','#D4830A','#9B59B6','#D43A3A','#16A085','#C0621A','#2980B9','#1B7A45'];
-let CH = {};
-const dch = id => { if(CH[id]){ CH[id].destroy(); delete CH[id]; } };
-
-const CO = {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#E8E8E8'},ticks:{font:{size:10}}}}};
-
-function proxyUrls(base){
-  const ts = Date.now();
-  const u = base + '&_=' + ts;
-  return [
-    'https://corsproxy.io/?' + encodeURIComponent(u),
-    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-    'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
-  ];
-}
-
-async function fetchCSV(baseUrl, label){
-  const urls = proxyUrls(baseUrl);
-  for(let i=0; i<urls.length; i++){
-    document.getElementById('ltxt').textContent = 'Conectando '+label+' ('+(i+1)+'/'+urls.length+')...';
-    try{
-      const ctrl = new AbortController();
-      const tid = setTimeout(()=>ctrl.abort(), 10000);
-      const res = await fetch(urls[i], { signal:ctrl.signal, cache:'no-store' });
-      clearTimeout(tid);
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const txt = await res.text();
-      if(txt.startsWith('{') && txt.includes('"contents"')){ const j=JSON.parse(txt); return j.contents||''; }
-      if(txt.length > 5 || txt.length === 0) return txt;
-      throw new Error('Payload corrompido');
-    } catch(e){ console.warn('Proxy '+(i+1)+' instável ('+label+'):',e.message); }
-  }
-  throw new Error('Não foi possível sincronizar ' + label);
-}
-
-function pLine(line){
-  const cols=[]; let cur='',inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
-    if(c==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
-    else if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; }
-    else cur+=c;
-  }
-  cols.push(cur.trim()); return cols;
-}
-function splitLines(txt){ return txt.replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim().split('\n'); }
-
-const pNum = v => {
-  if(!v||v===''||v==='-'||v==='#N/A') return 0;
-  let s=v.replace(/"/g,'').replace(/R\$\s*/g,'').trim();
-  if(s.includes(',')&&s.includes('.')) return parseFloat(s.replace(/\./g,'').replace(',','.'));
-  if(s.includes(',')) return parseFloat(s.replace(',','.'));
-  return parseFloat(s)||0;
+// CHAVES DE ACESSO CORPORATIVAS RESTRITAS
+const TOKENS = {
+  "energia.gestor": { nome: "Murilo Henrique (Gestor)", perfil: "Gestor", filial: "Castro" },
+  "energia.admin":  { nome: "Luiz Paulo (SESMT/IT)", perfil: "Admin", filial: "Matriz" }
 };
 
-function parseDateBR(v){
-  if(!v) return null;
-  const s = v.replace(/"/g,'').trim();
-  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m) return new Date(+m[3], +m[2]-1, +m[1]);
-  return null;
-}
+const CART_STORAGE_KEY = "_obsoletos_cart";
 
-function parseObsoletos(txt){
-  const lines = splitLines(txt);
-  if(lines.length < 2) return [];
-  const hdrs = pLine(lines[0]);
-  const fc = names => {
-    for(const n of names){
-      const i = hdrs.findIndex(h=>h.replace(/"/g,'').toLowerCase().includes(n.toLowerCase()));
-      if(i>=0) return i;
-    }
-    return -1;
-  };
-  const iCod=fc(['Codigo','Código']), iNome=fc(['Nome do produto','Produto']),
-        iVU=fc(['Valor unitario','Valor unitário']), iQtd=fc(['Quantidade']),
-        iVT=fc(['Valor total']), iData=fc(['Ultima saida','Última saída']),
-        iLoc=fc(['Local de Estoque','Local']);
+// ESTADOS GLOBAIS DA APLICACAO IN MEMORY
+let LOGGED_USER = null;
+let RAW_ESTOQUE = [];
+let RAW_SALDO = [];
+let RAW_PENDENTES = [];
+let RAW_HISTORICO = [];
+let CART = [];
 
-  const rows=[];
-  const hoje = new Date();
-  for(let i=1;i<lines.length;i++){
-    if(!lines[i].trim()) continue;
-    const c = pLine(lines[i]);
-    const local = (c[iLoc]||'').replace(/"/g,'').trim();
-    const valorTotal = iVT>=0 ? pNum(c[iVT]) : 0;
-    if(!local || valorTotal<=0) continue;
-    const dt = iData>=0 ? parseDateBR(c[iData]) : null;
-    const diasParado = dt ? Math.round((hoje-dt)/86400000) : null;
-    rows.push({
-      uid      : (c[iCod]||'').replace(/"/g,'').trim() + '||' + local,
-      codigo   : (c[iCod]||'').replace(/"/g,'').trim(),
-      produto  : (c[iNome]||'').replace(/"/g,'').trim(),
-      valorUnit: iVU>=0 ? pNum(c[iVU]) : 0,
-      qtd      : iQtd>=0 ? pNum(c[iQtd]) : 0,
-      valorTotal,
-      ultimaSaida: dt ? dt.toLocaleDateString('pt-BR') : '—',
-      diasParado : diasParado==null ? -1 : diasParado,
-      local
-    });
+// INSTANCIAS DE GRAFICOS (CHART.JS)
+let chartLocalInstance = null;
+let chartStatusInstance = null;
+
+// PROXIES PARA CONTORNO DE CORS EM DEBUG LOCAL/GITHUB PAGES
+const PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+];
+
+// INIT
+window.addEventListener("DOMContentLoaded", () => {
+  const s = localStorage.getItem("_session_user");
+  if(s){
+    try{
+      LOGGED_USER = JSON.parse(s);
+      setupEnvironment();
+    }catch(e){localStorage.removeItem("_session_user")}
   }
-  return rows;
+});
+
+function eye() {
+  const p = document.getElementById("passInput");
+  p.type = p.type === "password" ? "text" : "password";
 }
 
-function parseSaldo(txt){
-  const lines = splitLines(txt);
-  if(lines.length < 2) return {};
-  const hdrs = pLine(lines[0]);
-  const fc = names => {
-    for(const n of names){
-      const i = hdrs.findIndex(h=>h.replace(/"/g,'').toLowerCase().includes(n.toLowerCase()));
-      if(i>=0) return i;
-    }
-    return -1;
-  };
-  const iLoc=fc(['Local de Estoque','Local']), iVT=fc(['Valor total']);
-  const out={};
-  for(let i=1;i<lines.length;i++){
-    if(!lines[i].trim()) continue;
-    const c = pLine(lines[i]);
-    const local = (c[iLoc]||'').replace(/"/g,'').trim();
-    if(!local || local.toUpperCase()==='TOTAL') continue;
-    out[local] = iVT>=0 ? pNum(c[iVT]) : 0;
-  }
-  return out;
-}
+function doLogin() {
+  const t = document.getElementById("passInput").value.trim();
+  const err = document.getElementById("loginError");
+  err.innerText = "";
 
-function parseWorkflowPendentes(txt) {
-  const lines = splitLines(txt);
-  if (lines.length < 2) return [];
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const c = pLine(lines[i]);
-    rows.push({
-      idWorkflow: c[0],
-      dataSolicitacao: c[1],
-      solicitante: c[2],
-      codigoItem: c[3],
-      descricao: c[4],
-      local: c[5],
-      quantidade: pNum(c[6]),
-      valorTotal: pNum(c[7]),
-      destino: c[8],
-      obsGestor: c[9],
-      statusItem: c[10] || 'Aguardando Análise',
-      obsAdmin: c[11] || ''
-    });
-  }
-  return rows;
-}
+  if(!t) return err.innerText = "Por favor, digite sua chave corporativa.";
 
-function parseWorkflowHistorico(txt) {
-  const lines = splitLines(txt);
-  if (lines.length < 2) return [];
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const c = pLine(lines[i]);
-    rows.push({
-      idWorkflow: c[0],
-      dataSolicitacao: c[1],
-      dataConclusao: c[2],
-      solicitante: c[3],
-      codigoItem: c[4],
-      descricao: c[5],
-      local: c[6],
-      quantidade: pNum(c[7]),
-      valorTotal: pNum(c[8]),
-      destino: c[9],
-      obsGestor: c[10],
-      obsAdmin: c[11],
-      statusItem: c[12]
-    });
-  }
-  return rows;
-}
-
-function grp(arr, key){
-  return arr.reduce((a,r)=>{
-    const k=r[key]; if(!a[k])a[k]={n:0,valorTotal:0};
-    a[k].n++; a[k].valorTotal+=r.valorTotal||0;
-    return a;
-  },{});
-}
-const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
-
-// ── FLUXO DE SINCRONIZAÇÃO SENSÍVEL ───────
-async function loadData(manual=false){
-  const btn = document.getElementById('bsync');
-  if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
-  const sdot = document.getElementById('sdot');
-  if(sdot) sdot.classList.remove('dot-err');
-
-  try{
-    const [csvObs, csvSaldo, csvPendentes, csvHistorico] = await Promise.all([
-      fetchCSV(URL_OBSOLETOS, 'Estoque Obsoletos Base'),
-      fetchCSV(URL_SALDO, 'Volume Saldo Relativo'),
-      fetchCSV(URL_PENDENTES, 'Fila de Pendências'),
-      fetchCSV(URL_HISTORICO, 'Histórico Consolidado')
-    ]);
-    
-    RAW = parseObsoletos(csvObs);
-    if(!RAW.length) throw new Error('Dados de estoque base indisponíveis.');
-    SALDO = parseSaldo(csvSaldo);
-    
-    RAW_PENDENTES = parseWorkflowPendentes(csvPendentes);
-    RAW_HISTORICO = parseWorkflowHistorico(csvHistorico);
-
-    FILT = [...RAW];
-    initFilters(); initUI();
-
-    const now = new Date();
-    document.getElementById('ref-date').textContent = now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
-    document.getElementById('upd-t').textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('sb').style.display = 'flex';
-    document.getElementById('main').style.display = 'flex';
-
-    if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
-
-    if (currentRole === 'admin') { executarVerificacaoInteligenteEstoque(); }
-
-    refreshAdminIconBadge();
-
-    const activeMenu = document.querySelector('.ni.on');
-    renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
-
-  } catch(e){
-    console.error(e);
-    document.getElementById('ltxt').textContent = 'Erro de Rede';
-    document.getElementById('lerr2').innerHTML = '<b>Falha catastrófica ao sincronizar dados</b><br>'+e.message;
-    document.getElementById('lerr2').style.display = 'block';
-    document.getElementById('lbtn').style.display = 'block';
-    if(sdot) sdot.classList.add('dot-err');
-    if(btn) btn.classList.remove('syncing');
-  }
-}
-
-// ── ROTINAS DE FILTRO E MÓDULOS DE TELA ────
-let uiOn = false;
-function initUI(){
-  if(uiOn) return; uiOn = true;
-  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'🛒 Carrinho de Destinação',solicitacoes:'📋 Ciclo de Vida de Destinações'};
-  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista de itens identificados como obsoletos no sistema',carrinho:'Gerencie materiais adicionados, defina destinações e envie à planilha',solicitacoes:'Acompanhamento em tempo real das abas de governança da Planilha'};
-  
-  document.querySelectorAll('.ni[data-pg]').forEach(n=>{
-    n.onclick = function(){
-      document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
-      document.querySelectorAll('.pg').forEach(x=>x.classList.remove('on'));
-      this.classList.add('on');
-      const id = this.dataset.pg;
-      document.getElementById('pg-'+id).classList.add('on');
-      document.getElementById('ttl').textContent = titles[id];
-      document.getElementById('tsub').textContent = subs[id];
-      
-      if (id !== 'itens') { document.getElementById('cart-float-bar').style.display = 'none'; }
-      else { refreshFloatBar(); }
-      
-      applyF();
-    };
-  });
-}
-
-function applyF(){
-  const fl=document.getElementById('floc').value;
-  FILT = RAW.filter(r=> !fl || r.local===fl);
-  const activePg = document.querySelector('.pg.on'); 
-  if(activePg) renderTab(activePg.id.replace('pg-',''));
-}
-function resetF(){
-  document.getElementById('floc').value='';
-  document.getElementById('tsrch').value='';
-  FILT = [...RAW];
-  const activePg = document.querySelector('.pg.on'); 
-  if(activePg) renderTab(activePg.id.replace('pg-',''));
-}
-function initFilters(){
-  const el=document.getElementById('floc'); while(el.options.length>1)el.remove(1);
-  [...new Set(RAW.map(r=>r.local).filter(Boolean))].sort()
-    .forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
-}
-
-function renderTab(id){
-  const tot = FILT.reduce((s,r)=>s+r.valorTotal,0);
-  const saldoTotalGeral = Object.values(SALDO).reduce((s,v)=>s+v,0);
-
-  if(id==='visao'){
-    const lg = grp(FILT,'local'); const lk = skeys(lg);
-    const pctPorLocal = lk.map(k=>({local:k, valorObs:lg[k].valorTotal, saldo:SALDO[k]||0, pct: SALDO[k]?(lg[k].valorTotal/SALDO[k]*100):null}));
-    const critico = [...pctPorLocal].filter(x=>x.pct!=null).sort((a,b)=>b.pct-a.pct)[0];
-    const pctGeral = saldoTotalGeral>0 ? tot/saldoTotalGeral*100 : null;
-
-    document.getElementById('k1').textContent = fBRL(tot);
-    document.getElementById('k1s').textContent = FILT.length+' itens obsoletos';
-    document.getElementById('k2').textContent = pctGeral!=null ? pctGeral.toFixed(2)+'%' : '—';
-    document.getElementById('k2s').textContent = saldoTotalGeral>0 ? 'de '+fBRL(saldoTotalGeral)+' em saldo' : '—';
-    document.getElementById('k3').textContent = critico ? critico.local : (lk[0]||'—');
-    document.getElementById('k3s').textContent = critico ? critico.pct.toFixed(1)+'% do saldo' : '—';
-
-    const maisAntigo = [...FILT].filter(r=>r.diasParado>=0).sort((a,b)=>b.diasParado-a.diasParado)[0];
-    document.getElementById('k4').textContent = maisAntigo ? maisAntigo.diasParado+' dias' : '—';
-    document.getElementById('k4s').textContent = maisAntigo ? maisAntigo.produto.slice(0,28) : '—';
-
-    document.getElementById('atxt').innerHTML = 'Estoque obsoleto consolidado — <b>'+fBRL(tot)+'</b> em <b>'+FILT.length+' itens</b>';
-
-    dch('c1'); CH['c1']=new Chart(document.getElementById('c1'),{type:'bar',
-      data:{labels:lk,datasets:[{label:'Obsoleto',data:lk.map(k=>lg[k].valorTotal),backgroundColor:lk.map((_,i)=>CL[i%CL.length]),borderRadius:5}]},
-      options:{...CO,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fBRL(c.raw)}}},scales:{y:{ticks:{callback:fAX}}}}});
-
-    const pctOrdered = [...pctPorLocal].sort((a,b)=>(b.pct||0)-(a.pct||0));
-    dch('c2'); CH['c2']=new Chart(document.getElementById('c2'),{type:'bar',
-      data:{labels:pctOrdered.map(x=>x.local),datasets:[{label:'% Obsoleto',data:pctOrdered.map(x=>x.pct||0),backgroundColor:pctOrdered.map((_,i)=>CL[i%CL.length]),borderRadius:5}]},
-      options:{...CO,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%'}}}}});
-
-    let h='<table style="width:100%"><thead><tr><th>Local</th><th>Itens</th><th>Valor Obsoleto</th><th>Saldo Total</th><th>% Representa</th></tr></thead><tbody>';
-    pctOrdered.forEach((x,i)=>{
-      h+=`<tr style="background:${i%2?'#fff':'#FAFAFA'}"><td><b>${x.local}</b></td><td>${lg[x.local].n}</td><td class="nm">${fBRL(x.valorObs)}</td><td class="nm">${x.saldo?fBRL(x.saldo):'—'}</td><td class="${x.pct>15?'tag-old':x.pct>5?'tag-mid':'tag-ok'}">${x.pct?x.pct.toFixed(1)+'%':'—'}</td></tr>`;
-    });
-    document.getElementById('tb-loc').innerHTML=h+'</tbody></table>';
-  }
-
-  if(id==='itens') renderTbl(FILT);
-  if(id==='carrinho') renderMóduloCarrinho();
-  if(id==='solicitacoes') renderMóduloSolicitacoes();
-}
-
-function renderTbl(data){
-  const sorted = [...data].sort((a,b)=>{ const av=a[sk], bv=b[sk]; return (typeof av==='number'?av-bv:String(av).localeCompare(String(bv)))*sd; });
-  document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
-  document.getElementById('tfl').textContent = sorted.length+' itens';
-  
-  const isGestor = currentRole === 'gestor';
-  const cart = readCartInSession();
-
-  document.getElementById('tbody').innerHTML = sorted.map(r=>{
-    const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
-    const isLocked = cart[r.uid] ? 'disabled title="Retido no Carrinho"' : '';
-    const isChecked = itemCheckState[r.uid] ? 'checked' : '';
-    
-    return '<tr>'
-      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box sub-chk" data-uid="${r.uid}" ${isChecked} ${isLocked} onchange="catchSelection(this)"></td>` : '')
-      +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
-      +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
-      +'<td><span class="bdg">'+r.local+'</span></td>'
-      +'<td class="nm">'+fBRL(r.valorUnit)+'</td>'
-      +'<td class="nm">'+r.qtd+'</td>'
-      +'<td class="nm">'+fBRL(r.valorTotal)+'</td>'
-      +'<td style="font-size:11px;color:#555;white-space:nowrap">'+r.ultimaSaida+'</td>'
-      +'<td class="nm '+diasCls+'">'+(r.diasParado>=0?r.diasParado:'—')+'</td>'
-      +'</tr>';
-  }).join('');
-  
-  marcarCabecalhoOrdenacao();
-  if(isGestor) refreshFloatBar();
-}
-
-function ftbl(q){
-  const lq=q.toLowerCase();
-  renderTbl(FILT.filter(r=>r.produto.toLowerCase().includes(lq)||r.codigo.toLowerCase().includes(lq)||r.local.toLowerCase().includes(lq)));
-}
-function srt(key){ if(sk===key) sd*=-1; else{sk=key;sd=-1;} ftbl(document.getElementById('tsrch').value); }
-
-function marcarCabecalhoOrdenacao(){
-  document.querySelectorAll('#pg-itens thead th').forEach(t=>{
-    t.classList.remove('sa','sd');
-    if(t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${sk}'`)){
-      t.classList.add(sd===-1?'sd':'sa');
-    }
-  });
-}
-
-// ══════════════════════════════════════════
-//  PERSISTÊNCIA EM MEMÓRIA VOLÁTIL (CARRINHO)
-// ══════════════════════════════════════════
-let INTERNAL_SESSION_CART = {};
-
-function readCartInSession() { return INTERNAL_SESSION_CART; }
-function writeCartInSession(obj) { INTERNAL_SESSION_CART = obj; refreshCartIconBadge(); }
-
-function refreshCartIconBadge() {
-  const cart = readCartInSession();
-  const len = Object.keys(cart).length;
-  const b = document.getElementById('cart-count-badge');
-  if(b) {
-    b.textContent = len;
-    b.style.display = len > 0 ? 'inline-block' : 'none';
-  }
-}
-
-function catchSelection(el) {
-  if (el.checked) { itemCheckState[el.dataset.uid] = true; } 
-  else { delete itemCheckState[el.dataset.uid]; }
-  refreshFloatBar();
-}
-
-function selectAllVisible(master) {
-  document.querySelectorAll('.sub-chk:not([disabled])').forEach(chk => {
-    chk.checked = master.checked;
-    catchSelection(chk);
-  });
-}
-
-function refreshAdminIconBadge() {
-  const pendentesCount = RAW_PENDENTES.filter(i => i.statusItem === 'Aguardando Análise' || i.statusItem === 'Em Processamento').length;
-  const b = document.getElementById('sol-count-badge');
-  if(b) {
-    b.textContent = pendentesCount;
-    b.style.display = pendentesCount > 0 ? 'inline-block' : 'none';
-  }
-}
-
-function refreshFloatBar() {
-  const cnt = Object.keys(itemCheckState).length;
-  const bar = document.getElementById('cart-float-bar');
-  if (currentRole === 'gestor' && cnt > 0 && document.getElementById('pg-itens').classList.contains('on')) {
-    document.getElementById('cart-float-count').textContent = cnt;
-    bar.style.display = 'flex';
+  if(TOKENS[t]) {
+    LOGGED_USER = TOKENS[t];
+    localStorage.setItem("_session_user", JSON.stringify(LOGGED_USER));
+    setupEnvironment();
   } else {
-    bar.style.display = 'none';
+    err.innerText = "Chave inválida ou não autorizada para este ecossistema.";
   }
 }
 
-function pushSelectedToCart() {
-  const cart = readCartInSession();
-  Object.keys(itemCheckState).forEach(uid => {
-    const orig = RAW.find(r => r.uid === uid);
-    if (orig && !cart[uid]) {
-      cart[uid] = {
-        ...orig,
-        destinoSelected: 'Venda',
-        observacaoGestor: ''
-      };
-    }
-  });
-  writeCartInSession(cart);
-  itemCheckState = {};
-  document.getElementById('chk-master').checked = false;
-  alert('🛒 Materiais alocados no Carrinho com sucesso!');
-  applyF();
+function doLogout() {
+  localStorage.removeItem("_session_user");
+  LOGGED_USER = null;
+  document.getElementById("sidebar").classList.add("d-none");
+  document.getElementById("loginOverlay").classList.remove("d-none");
+  document.getElementById("floatingCart").classList.add("d-none");
+  document.getElementById("passInput").value = "";
+  if(chartLocalInstance) { chartLocalInstance.destroy(); chartLocalInstance = null; }
+  if(chartStatusInstance) { chartStatusInstance.destroy(); chartStatusInstance = null; }
 }
 
-function renderMóduloCarrinho() {
-  const cart = readCartInSession();
-  const tb = document.getElementById('cart-tbody');
-  const uids = Object.keys(cart);
+function tglSb() {
+  document.getElementById("sidebar").classList.toggle("mni");
+}
+
+function showLoader(v) {
+  const l = document.getElementById("globalLoader");
+  if(v) l.classList.add("act");
+  else l.classList.remove("act");
+}
+
+async function setupEnvironment() {
+  document.getElementById("loginOverlay").classList.add("d-none");
+  document.getElementById("sidebar").classList.remove("d-none");
   
-  if (uids.length === 0) {
-    tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:45px; color:var(--g4)">Carrinho vazio. Marque os itens desejados na listagem de estoque.</td></tr>`;
-    document.getElementById('cart-qty-summary').textContent = 0;
-    return;
+  document.getElementById("userLabel").innerText = LOGGED_USER.nome.split(" ")[0];
+  document.getElementById("userAvatar").innerText = LOGGED_USER.nome.charAt(0);
+  document.getElementById("perfilLabel").innerText = LOGGED_USER.perfil;
+
+  const mCart = document.getElementById("menu-cart");
+  const mAdm = document.getElementById("menu-adm");
+
+  if(LOGGED_USER.perfil === "Gestor") {
+    mCart.classList.remove("d-none");
+    mAdm.classList.add("d-none");
+  } else {
+    mCart.classList.add("d-none");
+    mAdm.classList.remove("d-none");
   }
-  
-  document.getElementById('cart-qty-summary').textContent = uids.length;
-  
-  tb.innerHTML = uids.map(uid => {
-    const i = cart[uid];
-    return `
-      <tr id="cart-item-${uid}">
-        <td style="color:#777; font-size:11px; font-variant-numeric:tabular-nums">${i.codigo}</td>
-        <td><b>${i.produto}</b></td>
-        <td><span class="bdg">${i.local}</span></td>
-        <td style="text-align:center">${i.qtd}</td>
-        <td class="nm">${fBRL(i.valorTotal)}</td>
-        <td>
-          <select class="cart-sel" onchange="alterarPropriedadeItemCarrinho('${uid}', 'destinoSelected', this.value)">
-            <option value="Venda" ${i.destinoSelected==='Venda'?'selected':''}>Venda</option>
-            <option value="Doação" ${i.destinoSelected==='Doação'?'selected':''}>Doação</option>
-            <option value="Reaproveitamento" ${i.destinoSelected==='Reaproveitamento'?'selected':''}>Reaproveitamento</option>
-            <option value="Descarte" ${i.destinoSelected==='Descarte'?'selected':''}>Descarte</option>
-            <option value="Transferência" ${i.destinoSelected==='Transferência'?'selected':''}>Transferência</option>
-            <option value="Recuperação" ${i.destinoSelected==='Recuperação'?'selected':''}>Recuperação</option>
-            <option value="Outro" ${i.destinoSelected==='Outro'?'selected':''}>Outro</option>
-          </select>
-        </td>
-        <td>
-          <input type="text" class="cart-tx" placeholder="Nota descritiva gestor..." value="${i.observacaoGestor || ''}" oninput="alterarPropriedadeItemCarrinho('${uid}', 'observacaoGestor', this.value)">
-        </td>
-        <td style="text-align:center">
-          <button class="btn-del-cart" onclick="eliminarDoCarrinho('${uid}')">Remover</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
+
+  CART = loadCart();
+  await syncData();
+  switchTab("dash");
 }
 
-function alterarPropriedadeItemCarrinho(uid, prop, val) {
-  const cart = readCartInSession();
-  if (cart[uid]) {
-    cart[uid][prop] = val;
-  }
-}
-
-function eliminarDoCarrinho(uid) {
-  const cart = readCartInSession();
-  delete cart[uid];
-  writeCartInSession(cart);
-  renderMóduloCarrinho();
-}
-
-// ── CONEXÃO ASSÍNCRONA COM O GOOGLE APPS SCRIPT ──
-async function callAppsScriptAPI(actionName, payloadData) {
-  document.getElementById('api-glass').style.display = 'flex';
+// ARQUITETURA HIBRIDA: LEITURA EXCLUSIVA POR CSV PUBLICADO
+async function syncData() {
+  showLoader(true);
   try {
-    const response = await fetch(URL_APPS_SCRIPT, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: actionName, payload: payloadData })
-    });
-    const resJson = await response.json();
-    if (!resJson.success) throw new Error(resJson.error || 'Erro interno retornado pelo servidor');
-    return resJson;
+    const txtEstoque = await fetchCSVWithFallback(URL_OBSOLETOS, "Estoque");
+    if(txtEstoque) RAW_ESTOQUE = parseCSVToJSON(txtEstoque);
+
+    const txtSaldo = await fetchCSVWithFallback(URL_SALDO, "Saldos");
+    if(txtSaldo) RAW_SALDO = parseCSVToJSON(txtSaldo);
+
+    const txtPendentes = await fetchCSVWithFallback(URL_PENDENTES, "Pendentes");
+    if(txtPendentes) RAW_PENDENTES = parseCSVToJSON(txtPendentes);
+
+    const txtHistorico = await fetchCSVWithFallback(URL_HISTORICO, "Histórico");
+    if(txtHistorico) RAW_HISTORICO = parseCSVToJSON(txtHistorico);
+
+    populateLocalFilterOptions();
+    calculateAndRenderDashboardKPIs();
+    refreshActiveViewData();
+    updateFloatingCartState();
   } catch(e) {
-    alert('❌ Ocorreu um erro ao persistir as alterações na planilha:\n' + e.message);
-    throw e;
+    console.error("Erro na carga híbrida estática:", e);
   } finally {
-    document.getElementById('api-glass').style.display = 'none';
+    showLoader(false);
   }
 }
 
-async function dispatchLoteDestinacao() {
-  const cart = readCartInSession();
-  const list = Object.values(cart);
-  
-  if (list.length === 0) {
-    alert('❌ Nenhum material disponível para despacho.');
-    return;
-  }
-  
-  if (confirm(`Deseja efetivar o envio deste lote com ${list.length} material(is) para a base de dados da Planilha?`)) {
-    const sId = 'WF-' + Date.now().toString().slice(-6);
-    const dataH = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-    
-    const pacoteItens = list.map(m => ({
-      idWorkflow: sId,
-      dataSolicitacao: dataH,
-      solicitante: AUTH_GEST_USER,
-      codigoItem: m.codigo,
-      descricao: m.produto,
-      local: m.local,
-      quantidade: m.qtd,
-      valorTotal: m.valorTotal,
-      destino: m.destinoSelected,
-      obsGestor: m.observacaoGestor || '—',
-      statusItem: 'Aguardando Análise'
-    }));
-    
-    try {
-      await callAppsScriptAPI('criarSolicitacao', pacoteItens);
-      writeCartInSession({});
-      alert('🚀 Solicitação persistida com sucesso na planilha! Atualizando indicadores...');
-      await loadData();
-    } catch(err) {
-      console.error(err);
-    }
-  }
-}
-
-// ══════════════════════════════════════════
-//  MONITORAMENTO E GESTÃO DE WORKFLOWS (ADMIN)
-// ══════════════════════════════════════════
-function switchAdminTab(tabName) {
-  currentAdminViewTab = tabName;
-  document.getElementById('btn-tab-pendentes').classList.toggle('active', tabName === 'pendentes');
-  document.getElementById('btn-tab-historico').classList.toggle('active', tabName === 'historico');
-  renderMóduloSolicitacoes();
-}
-
-async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
-  const uniqueKey = `${idWorkflow}-${codigoItem}`;
-  const obsText = document.getElementById(`obs-admin-${uniqueKey}`).value.trim() || '—';
-  
-  if (novoStatus === 'Concluída' || novoStatus === 'Cancelada') {
-    if (!confirm(`Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`)) {
-      loadData();
-      return;
-    }
-  }
-  
+async function fetchCSVWithFallback(url, label) {
+  let textData = null;
+  // Tenta puxar direto
   try {
-    const resultado = await callAppsScriptAPI('atualizarStatusItem', {
-      idWorkflow: idWorkflow,
-      codigoItem: codigoItem,
-      statusItem: novoStatus,
-      obsAdmin: obsText
-    });
-    
-    if (resultado.workflowEncerrado) {
-      alert(`🎯 Workflow ${idWorkflow} finalizado! Todos os itens foram respondidos e o bloco foi migrado para o Histórico.`);
-    } else {
-      alert(`⚡ Status do item ${codigoItem} updated na planilha.`);
+    const r = await fetch(url + "&cache=" + Date.now());
+    if(r.ok) textData = await r.text();
+  } catch(e) { console.warn(`Fetch direto falhou para ${label}, tentando via proxy...`); }
+
+  // Fallback se travar CORS em localhost ou gh-pages
+  if(!textData) {
+    for(let i=0; i<PROXIES.length; i++) {
+      try {
+        const proxyUrl = PROXIES[i](url);
+        const r = await fetch(proxyUrl);
+        if(r.ok) { textData = await r.text(); break; }
+      } catch(e) { console.warn(`Proxy ${i} falhou.`); }
     }
-    await loadData();
+  }
+  return textData;
+}
+
+function parseCSVToJSON(text) {
+  if(!text) return [];
+  const linhas = text.split(/\r?\n/).map(l => {
+    // Parser resiliente a aspas e vírgulas internas
+    let result = [];
+    let inQuotes = false;
+    let current = "";
+    for(let i=0; i<l.length; i++) {
+      let c = l[i];
+      if(c === '"') { inQuotes = !inQuotes; }
+      else if(c === ',' && !inQuotes) { result.push(current.trim()); current = ""; }
+      else { current += c; }
+    }
+    result.push(current.trim());
+    return result;
+  });
+
+  const cabecalho = linhas[0].map(c => c.replace(/"/g, "").trim());
+  return linhas.slice(1).filter(l => l.length > 0 && l[0] !== "").map(linha => {
+    let obj = {};
+    cabecalho.forEach((col, idx) => {
+      let val = linha[idx] ? linha[idx].replace(/"/g, "").trim() : "";
+      obj[col] = val;
+    });
+    return obj;
+  });
+}
+
+function populateLocalFilterOptions() {
+  const sel = document.getElementById("f-est-loc");
+  if(!sel) return;
+  const locaisSet = new Set();
+  RAW_ESTOQUE.forEach(i => { if(i.Local) locaisSet.add(i.Local); });
+  
+  sel.innerHTML = '<option value="">Todos os Locais</option>';
+  locaisSet.forEach(l => {
+    sel.innerHTML += `<option value="${l}">${l}</option>`;
+  });
+}
+
+// ARQUITETURA DE ESCRITA: ENCAPSULAMENTO DE DISPAROS POST EXCLUSIVOS PARA O APPS SCRIPT
+async function callAppsScriptAPI(action, payload) {
+  showLoader(true);
+  try {
+    await fetch(URL_APPS_SCRIPT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: action, payload: payload })
+    });
+    return { success: true };
   } catch(e) {
-    console.error(e);
+    console.error("Falha no disparo transacional do Apps Script:", e);
+    return { success: false, error: e.toString() };
+  } finally {
+    showLoader(false);
   }
 }
 
-function renderMóduloSolicitacoes() {
-  const wrapper = document.getElementById('admin-sol-wrapper');
-  const baseDados = currentAdminViewTab === 'pendentes' ? RAW_PENDENTES : RAW_HISTORICO;
-  
-  if (baseDados.length === 0) {
-    wrapper.innerHTML = `
-      <div style="text-align:center; padding:60px 20px; color:var(--g4)">
-        <span style="font-size:36px">📋</span>
-        <p style="margin-top:10px; font-size:13px">Nenhum registro encontrado para exibição na aba corporativa.</p>
-      </div>
-    `;
+function switchTab(t) {
+  document.querySelectorAll(".sb-i").forEach(i => i.classList.remove("act"));
+  document.querySelectorAll(".vw").forEach(v => v.classList.remove("act"));
+
+  const view = document.getElementById("view-" + t);
+  const menu = document.getElementById("menu-" + t);
+  if(view) view.classList.add("act");
+  if(menu) menu.classList.add("act");
+
+  const titleMap = { dash: "Dashboard Geral", est: "Estoque Obsoleto", cart: "Meu Carrinho", adm: "Análise de Solicitações", his: "Histórico Geral" };
+  document.getElementById("viewTitle").innerText = titleMap[t] || "Sistema";
+
+  refreshActiveViewData();
+  updateFloatingCartState();
+}
+
+function refreshActiveViewData() {
+  const act = document.querySelector(".vw.act");
+  if(!act) return;
+  const id = act.id;
+
+  if(id === "view-dash") renderCharts();
+  else if(id === "view-est") renderEstoqueTable(RAW_ESTOQUE);
+  else if(id === "view-cart") renderCartTable();
+  else if(id === "view-adm") renderAdminSolicitacoes();
+  else if(id === "view-his") renderHistoricoTable(RAW_HISTORICO);
+}
+
+function calculateAndRenderDashboardKPIs() {
+  let totItens = 0;
+  let valTot = 0;
+  RAW_ESTOQUE.forEach(i => {
+    let q = parseFloat(i["Quantidade Disponível"] || i.Quantidade || 0);
+    let v = parseFloat(i["Valor Unitário"] || i.ValorUnitario || 0);
+    totItens += q;
+    valTot += (q * v);
+  });
+
+  document.getElementById("kpi-tot-itens").innerText = totItens.toLocaleString("pt-BR");
+  document.getElementById("kpi-val-tot").innerText = valTot.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // Calcula com base nos dados reais do CSV público das novas abas
+  document.getElementById("kpi-pend-qtd").innerText = RAW_PENDENTES.length;
+  document.getElementById("kpi-dest-qtd").innerText = RAW_HISTORICO.length;
+}
+
+function renderCharts() {
+  const locMap = {};
+  RAW_ESTOQUE.forEach(i => {
+    let l = i.Local || "Não Identificado";
+    let q = parseFloat(i["Quantidade Disponível"] || 0);
+    let v = parseFloat(i["Valor Unitário"] || 0);
+    locMap[l] = (locMap[l] || 0) + (q * v);
+  });
+
+  const ctxLoc = document.getElementById("chartLocal");
+  if(ctxLoc) {
+    if(chartLocalInstance) chartLocalInstance.destroy();
+    chartLocalInstance = new Chart(ctxLoc, {
+      type: "bar",
+      data: {
+        labels: Object.keys(locMap),
+        datasets: [{ label: "Capital Ocioso (R$)", data: Object.values(locMap), backgroundColor: "#E8511A" }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  const stMap = { "Pendente": 0, "Aprovado": 0, "Alterado": 0 };
+  RAW_PENDENTES.forEach(p => {
+    let s = p.Status || "Pendente";
+    stMap[s] = (stMap[s] || 0) + 1;
+  });
+
+  const ctxSt = document.getElementById("chartStatus");
+  if(ctxSt) {
+    if(chartStatusInstance) chartStatusInstance.destroy();
+    chartStatusInstance = new Chart(ctxSt, {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(stMap),
+        datasets: [{ data: Object.values(stMap), backgroundColor: ["#D4830A", "#2EA86B", "#1A5FA8"] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+}
+
+function renderEstoqueTable(arr) {
+  const b = document.getElementById("tableEstoqueBody");
+  if(!b) return;
+  b.innerHTML = "";
+
+  if(arr.length === 0) {
+    b.innerHTML = '<tr><td colspan="7" class="txt-c">Nenhum registro encontrado para exibição.</td></tr>';
     return;
   }
-  
-  const workflowsAgrupados = {};
-  baseDados.forEach(item => {
-    if (!workflowsAgrupados[item.idWorkflow]) {
-      workflowsAgrupados[item.idWorkflow] = {
-        idWorkflow: item.idWorkflow,
-        dataSolicitacao: item.dataSolicitacao,
-        dataConclusao: item.dataConclusao || null,
-        solicitante: item.solicitante,
-        itens: []
-      };
-    }
-    workflowsAgrupados[item.idWorkflow].itens.push(item);
-  });
-  
-  const listaCards = Object.values(workflowsAgrupados).sort((a,b) => b.idWorkflow.localeCompare(a.idWorkflow));
-  
-  wrapper.innerHTML = listaCards.map(wf => {
-    let tRows = wf.itens.map(li => {
-      const uniqueKey = `${wf.idWorkflow}-${li.codigoItem}`;
-      let acaoHTML = '';
-      
-      if (currentAdminViewTab === 'pendentes') {
-        const opcoes = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
-        acaoHTML = `
-          <td>
-            <select class="admin-select-status" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.value)">
-              ${opcoes.map(o => `<option value="${o}" ${li.statusItem === o ? 'selected' : ''}>${o}</option>`).join('')}
-            </select>
-          </td>
-          <td>
-            <input type="text" class="cart-tx" id="obs-admin-${uniqueKey}" placeholder="Parecer técnico..." value="${li.obsAdmin || ''}" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.parentElement.previousElementSibling.querySelector('select').value)">
-          </td>
-        `;
-      } else {
-        acaoHTML = `
-          <td style="font-weight:700; color:var(--og)">${li.statusItem}</td>
-          <td style="color:var(--g5); font-style:italic">${li.obsAdmin || '—'}</td>
-        `;
-      }
-      
-      return `
-        <tr style="border-bottom:1px solid var(--g1)">
-          <td style="padding:8px; color:var(--g5)">${li.codigoItem}</td>
-          <td style="padding:8px; font-weight:500" title="${li.descricao}">${li.descricao.length > 35 ? li.descricao.slice(0,34)+'…' : li.descricao}</td>
-          <td style="padding:8px;"><span class="bdg">${li.local}</span></td>
-          <td style="padding:8px; text-align:center">${li.quantidade}</td>
-          <td style="padding:8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
-          <td style="padding:8px; font-weight:700; color:var(--bl)">${li.destino}</td>
-          <td style="padding:8px; color:var(--g4); font-size:11px;" title="${li.obsGestor}">${li.obsGestor}</td>
-          ${acaoHTML}
-        </tr>
-      `;
-    }).join('');
 
-    const subInfo = wf.dataConclusao ? ` | Finalizado em: <b>${wf.dataConclusao}</b>` : '';
+  arr.forEach(i => {
+    const cod = i.Código || i.Codigo;
+    const desc = i["Descrição do Material"] || i.Descricao;
+    const loc = i.Local || "—";
+    const qtd = parseFloat(i["Quantidade Disponível"] || 0);
+    const vUn = parseFloat(i["Valor Unitário"] || 0);
+    const vTot = qtd * vUn;
 
-    return `
-      <div class="sol-block">
-        <div class="sol-block-header">
-          <div>
-            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${wf.idWorkflow}</div>
-            <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${wf.solicitante}</b> | Enviado em: ${wf.dataSolicitacao}${subInfo}</div>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table style="min-width:100%; font-size:11px;">
-            <thead>
-              <tr style="background:var(--g1); color:var(--dk)">
-                <th style="padding:7px 8px; color:var(--dk)">Código</th>
-                <th style="padding:7px 8px; color:var(--dk)">Produto</th>
-                <th style="padding:7px 8px; color:var(--dk)">Local</th>
-                <th style="padding:7px 8px; color:var(--dk); text-align:center">Qtd</th>
-                <th style="padding:7px 8px; color:var(--dk); text-align:right">Valor Total</th>
-                <th style="padding:7px 8px; color:var(--dk)">Destino</th>
-                <th style="padding:7px 8px; color:var(--dk)">Obs Gestor</th>
-                <th style="padding:7px 8px; color:var(--dk)">Status Item</th>
-                <th style="padding:7px 8px; color:var(--dk)">Observações Admin (Parecer)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tRows}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    const inCart = CART.some(c => c.codigo === cod);
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="txt-c">
+        ${LOGGED_USER.perfil === 'Gestor' ? `<input type="checkbox" ${inCart?'checked':''} onchange="toggleCartItem('${cod}', this)">` : '—'}
+      </td>
+      <td><strong>${cod}</strong></td>
+      <td>${desc}</td>
+      <td>${loc}</td>
+      <td class="txt-r">${qtd.toLocaleString("pt-BR")}</td>
+      <td class="txt-r">${vUn.toLocaleString("pt-BR", {style:"currency",currency:"BRL"})}</td>
+      <td class="txt-r fw-600">${vTot.toLocaleString("pt-BR", {style:"currency",currency:"BRL"})}</td>
     `;
-  }).join('');
+    b.appendChild(tr);
+  });
 }
 
-// ── AUDITORIA ASSISTIDA DE ESTOQUE VAZIO ──
-function executarVerificacaoInteligenteEstoque() {
-  if (RAW_PENDENTES.length === 0) return;
-  const codigosAtivosNaBase = new Set(RAW.map(r => r.codigo));
-  
-  const agrupado = {};
-  RAW_PENDENTES.forEach(item => {
-    if(!agrupado[item.idWorkflow]) agrupado[item.idWorkflow] = [];
-    agrupado[item.idWorkflow].push(item);
+function filterEstoque() {
+  const t = document.getElementById("f-est-term").value.toLowerCase();
+  const l = document.getElementById("f-est-loc").value;
+  const c = document.getElementById("f-est-curv").value;
+
+  const filtered = RAW_ESTOQUE.filter(i => {
+    const cCod = String(i.Código || i.Codigo || "").toLowerCase();
+    const cDsc = String(i["Descrição do Material"] || i.Descricao || "").toLowerCase();
+    const cLoc = i.Local || "";
+    const cCurv = i.Curva || "";
+
+    const mTerm = cCod.includes(t) || cDsc.includes(t);
+    const mLoc = !l || cLoc === l;
+    const mCurv = !c || cCurv === c;
+
+    return mTerm && mLoc && mCurv;
   });
-  
-  Object.keys(agrupado).forEach(idWf => {
-    const itensLote = agrupado[idWf];
-    const todosSumiram = itensLote.every(i => !codigosAtivosNaBase.has(i.codigoItem));
-    const loteAindaAtivo = itensLote.some(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
-    
-    if (todosSumiram && loteAindaAtivo) {
-      setTimeout(async () => {
-        if (confirm(`📊 [Análise Inteligente de Sincronização]\n\nDetectamos que todos os itens pertencentes à solicitação "${idWf}" não existem mais na base ativa de estoque obsoleto.\n\nDeseja marcar automaticamente este lote como "Concluído" no sistema?`)) {
-          const primeiroPendente = itensLote.find(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
-          if (primeiroPendente) {
-            try {
-              await callAppsScriptAPI('atualizarStatusItem', {
-                idWorkflow: idWf,
-                codigoItem: primeiroPendente.codigoItem,
-                statusItem: 'Concluída',
-                obsAdmin: 'Baixa automática gerada por validação assistida de estoque vazio.'
-              });
-              alert(`🎯 Workflow ${idWf} arquivado com sucesso no Histórico.`);
-              await loadData();
-            } catch(e) { console.error(e); }
-          }
-        }
-      }, 600);
+
+  renderEstoqueTable(filtered);
+}
+
+function clearFiltersEstoque() {
+  document.getElementById("f-est-term").value = "";
+  document.getElementById("f-est-loc").value = "";
+  document.getElementById("f-est-curv").value = "";
+  renderEstoqueTable(RAW_ESTOQUE);
+}
+
+// LÓGICA DO CARRINHO PRESERVADA NO STORAGE SESSÃO APENAS ENQUANTO MONTA O LOTE
+function loadCart() {
+  const d = localStorage.getItem(CART_STORAGE_KEY);
+  return d ? JSON.parse(d) : [];
+}
+
+function saveCart() {
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(CART));
+  updateFloatingCartState();
+}
+
+function clearCartCompletely() {
+  CART = [];
+  saveCart();
+  refreshActiveViewData();
+}
+
+function updateFloatingCartState() {
+  const f = document.getElementById("floatingCart");
+  if(!f) return;
+  if(LOGGED_USER && LOGGED_USER.perfil === "Gestor" && CART.length > 0) {
+    f.classList.remove("d-none");
+    let tot = 0;
+    CART.forEach(c => tot += (c.qtd * c.valorUnitario));
+    document.getElementById("fl-cart-val").innerText = tot.toLocaleString("pt-BR", {style:"currency",currency:"BRL"});
+    document.getElementById("fl-cart-badge").innerText = CART.length;
+  } else {
+    f.classList.add("d-none");
+  }
+}
+
+function toggleCartItem(codigo, chk) {
+  if(chk.checked) {
+    const match = RAW_ESTOQUE.find(i => (i.Código || i.Codigo) === codigo);
+    if(match) {
+      CART.push({
+        codigo: codigo,
+        produto: match["Descrição do Material"] || match.Descricao,
+        local: match.Local || "Castro",
+        qtd: 1,
+        qtdMax: parseFloat(match["Quantidade Disponível"] || 1),
+        valorUnitario: parseFloat(match["Valor Unitário"] || 0),
+        destino: "Sucata / Descarte",
+        observacoes: ""
+      });
     }
+  } else {
+    CART = CART.filter(c => c.codigo !== codigo);
+  }
+  saveCart();
+}
+
+function renderCartTable() {
+  const b = document.getElementById("tableCartBody");
+  if(!b) return;
+  b.innerHTML = "";
+
+  if(CART.length === 0) {
+    b.innerHTML = '<tr><td colspan="6" class="txt-c">Seu carrinho está vazio neste momento.</td></tr>';
+    document.getElementById("cartTotalLabel").innerText = "R$ 0,00";
+    return;
+  }
+
+  let totLote = 0;
+
+  CART.forEach((c, index) => {
+    totLote += (c.qtd * c.valorUnitario);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${c.codigo}</strong><br><small class="text-muted">${c.produto}</small></td>
+      <td class="txt-c">
+        <input type="number" value="${c.qtd}" min="1" max="${c.qtdMax}" style="width:70px;text-align:center" onchange="updateCartQtd(${index}, this.value)">
+      </td>
+      <td>${c.local}</td>
+      <td>
+        <select onchange="updateCartDestino(${index}, this.value)">
+          <option value="Sucata / Descarte" ${c.destino==='Sucata / Descarte'?'selected':''}>Sucata / Descarte</option>
+          <option value="Uso Interno / Obra" ${c.destino==='Uso Interno / Obra'?'selected':''}>Uso Interno / Obra</option>
+          <option value="Venda Direta" ${c.destino==='Venda Direta'?'selected':''}>Venda Direta</option>
+          <option value="Transferência" ${c.destino==='Transferência'?'selected':''}>Transferência</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" value="${c.observacoes}" placeholder="Justifique sua escolha..." style="width:100%;padding:4px;" onchange="updateCartObs(${index}, this.value)">
+      </td>
+      <td class="txt-c">
+        <button class="btn btn-rd btn-sm" onclick="removeCartItemByIndex(${index})">Remover</button>
+      </td>
+    `;
+    b.appendChild(tr);
   });
+
+  document.getElementById("cartTotalLabel").innerText = totLote.toLocaleString("pt-BR", {style:"currency",currency:"BRL"});
+}
+
+function updateCartQtd(idx, v) { if(CART[idx]) { CART[idx].qtd = parseFloat(v || 1); saveCart(); document.getElementById("cartTotalLabel").innerText = CART.reduce((acc,c)=>acc+(c.qtd*c.valorUnitario),0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); } }
+function updateCartDestino(idx, v) { if(CART[idx]) { CART[idx].destino = v; saveCart(); } }
+function updateCartObs(idx, v) { if(CART[idx]) { CART[idx].observacoes = v; saveCart(); } }
+function removeCartItemByIndex(idx) { CART.splice(idx,1); saveCart(); renderCartTable(); }
+
+// FLUXO DO GESTOR: SUBMETER SOLICITACAO SALVANDO DEFINITIVAMENTE NA PLANILHA VIA APPS SCRIPT
+async function dispatchLoteDestinacao() {
+  if(CART.length === 0) return alert("Adicione materiais ao carrinho antes de despachar.");
+
+  if(!confirm("Confirmar envio deste lote de materiais para a análise da administração?")) return;
+
+  // Geração do Identificador Único do Workflow unificado para o lote
+  const idWf = "WF" + Math.floor(100000 + Math.random() * 900000);
+
+  const payload = CART.map(c => ({
+    wf: idWf,
+    codigo: c.codigo,
+    produto: c.produto,
+    local: c.local,
+    qtd: c.qtd,
+    valorTotal: c.qtd * c.valorUnitario,
+    destino: c.destino,
+    observacoes: c.observacoes,
+    solicitante: LOGGED_USER.nome
+  }));
+
+  const res = await callAppsScriptAPI("criarSolicitacao", payload);
+  alert("Solicitação enviada com sucesso! Código do lote gerado: " + idWf);
+  clearCartCompletely();
+  await syncData();
+  switchTab("dash");
+}
+
+// INTERFACE DO ADMINISTRADOR: SIMPLIFICADA, LIMPA, COLUNAS REDUZIDAS E ALINHADA AO VISUAL DO GESTOR
+function renderAdminSolicitacoes() {
+  const b = document.getElementById("tableAdminBody");
+  if(!b) return;
+  b.innerHTML = "";
+
+  if(RAW_PENDENTES.length === 0) {
+    b.innerHTML = '<tr><td colspan="5" class="txt-c">Nenhuma solicitação aguardando análise neste momento.</td></tr>';
+    return;
+  }
+
+  RAW_PENDENTES.forEach(item => {
+    const tr = document.createElement("tr");
+    const wf = item.Workflow || item.wf;
+    const cod = item.Código || item.codigo;
+    const prod = item.Produto || item.produto;
+    const qtd = item.Quantidade || item.qtd;
+    const local = item.Local || item.local;
+    const sol = item.Solicitante || item.solicitante;
+    const dest = item.Destino || item.destino;
+
+    tr.innerHTML = `
+      <td>
+        <strong>${cod}</strong><br>
+        <small class="text-muted">${prod}</small>
+      </td>
+      <td class="txt-c"><strong>${qtd}</strong></td>
+      <td>${local}<br><small class="text-muted">Por: ${sol}</small></td>
+      <td><span class="badge a">${dest}</span></td>
+      <td>
+        <div class="d-flex gap-1">
+          <input type="text" id="obs_admin_${wf}_${cod}" class="form-control form-control-sm" placeholder="Justificativa/Obs..." style="flex:1; padding:4px; font-size:12px;">
+          <button class="btn btn-gn btn-sm" onclick="processarItemAdmin('${wf}', '${cod}', 'Concluído')">✔️ Aprovar</button>
+          <button class="btn btn-rd btn-sm" onclick="processarItemAdmin('${wf}', '${cod}', 'Alterado')">❌ Alterar</button>
+        </div>
+      </td>
+    `;
+    b.appendChild(tr);
+  });
+}
+
+// FLUXO DO ADMINISTRADOR: CONCLUIR INDIVIDUALMENTE E ARQUIVAR AUTOMATICAMENTE QUANDO COMPLETAR O LOTE
+async function processarItemAdmin(wf, codigo, novoStatus) {
+  const obsField = document.getElementById(`obs_admin_${wf}_${codigo}`);
+  const obsTexto = obsField ? obsField.value : "";
+
+  // 1. Atualiza o item individual na planilha através do script
+  await callAppsScriptAPI("atualizarItem", {
+    wf: wf,
+    codigo: codigo,
+    novoStatus: novoStatus,
+    observacoesAdmin: obsTexto
+  });
+
+  // 2. Verifica localmente no cache se restam itens pendentes do mesmo Workflow
+  const itensDoMesmoWf = RAW_PENDENTES.filter(p => (p.Workflow || p.wf) === wf);
+  const outrosPendentes = itensDoMesmoWf.filter(p => (p.Código || p.codigo) !== codigo);
+
+  // Se for o último item tratado do Workflow, dispara o fechamento e migração para o histórico automaticamente
+  if(outrosPendentes.length === 0) {
+    await callAppsScriptAPI("arquivarWorkflow", {
+      wf: wf,
+      adminResponsavel: LOGGED_USER.nome
+    });
+    alert(`Ótimo! Todas as partes do lote ${wf} foram processadas. O lote foi arquivado no histórico definitivo.`);
+  } else {
+    alert(`Item ${codigo} atualizado com sucesso no lote ${wf}.`);
+  }
+
+  // Atualização veloz re-puxando as bases publicadas
+  await syncData();
+}
+
+function renderHistoricoTable(arr) {
+  const b = document.getElementById("tableHistoricoBody");
+  if(!b) return;
+  b.innerHTML = "";
+
+  if(arr.length === 0) {
+    b.innerHTML = '<tr><td colspan="6" class="txt-c">Nenhum histórico registrado até o momento.</td></tr>';
+    return;
+  }
+
+  arr.forEach(h => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="badge p">${h.Workflow || h.wf || "—"}</span></td>
+      <td>${h["Data Conclusão"] || h.dataConclusao || "—"}</td>
+      <td><strong>${h.Código || h.codigo}</strong><br><small>${h.Produto || h.produto}</small></td>
+      <td class="txt-r">${h.Quantidade || h.qtd}</td>
+      <td><span class="badge g">${h["Destino Final/Sugerido"] || h.destinoFinal || "Destinado"}</span></td>
+      <td><small>${h["Responsável Admin"] || h.adminResponsavel || "Admin"}</small></td>
+    `;
+    b.appendChild(tr);
+  });
+}
+
+function filterHistorico() {
+  const term = document.getElementById("f-his-term").value.toLowerCase();
+  const f = RAW_HISTORICO.filter(h => {
+    const cWf = String(h.Workflow || h.wf || "").toLowerCase();
+    const cCod = String(h.Código || h.codigo || "").toLowerCase();
+    const cProd = String(h.Produto || h.produto || "").toLowerCase();
+    return cWf.includes(term) || cCod.includes(term) || cProd.includes(term);
+  });
+  renderHistoricoTable(f);
 }
 </script>
 </body>
