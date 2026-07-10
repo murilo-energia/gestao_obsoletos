@@ -706,7 +706,7 @@ function renderTab(id){
     document.getElementById('k1s').textContent = FILT.length+' itens obsoletos';
     document.getElementById('k2').textContent = pctGeral!=null ? pctGeral.toFixed(2)+'%' : '—';
     document.getElementById('k2s').textContent = saldoTotalGeral>0 ? 'de '+fBRL(saldoTotalGeral)+' em saldo' : '—';
-    document.getElementById('k3').textContent = critico ? critico.local : (lk[0]||'—');
+    document.getElementById('k3').textContent = critico ? critical.local : (lk[0]||'—');
     document.getElementById('k3s').textContent = critico ? critico.pct.toFixed(1)+'% do saldo' : '—';
 
     const maisAntigo = [...FILT].filter(r=>r.diasParado>=0).sort((a,b)=>b.diasParado-a.diasParado)[0];
@@ -925,7 +925,7 @@ async function callAppsScriptAPI(actionName, payloadData) {
   } catch(e) {
     alert('❌ Ocorreu um erro ao persistir as alterações na planilha:\n' + e.message);
     throw e;
-  } finaly {
+  } finally {
     document.getElementById('api-glass').style.display = 'none';
   }
 }
@@ -1000,7 +1000,7 @@ async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
     if (resultado.workflowEncerrado) {
       alert(`🎯 Workflow ${idWorkflow} finalizado! Todos os itens foram respondidos e o bloco foi migrado para o Histórico.`);
     } else {
-      alert(`⚡ Status do item ${codigoItem} atualizado na planilha.`);
+      alert(`⚡ Status do item ${codigoItem} updated na planilha.`);
     }
     await loadData();
   } catch(e) {
