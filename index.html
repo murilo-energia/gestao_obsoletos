@@ -65,8 +65,6 @@ body{background:#EEF0F4;color:var(--dk);min-height:100vh}
 .sb-foot b{color:var(--og)}
 .author{margin-top:6px;padding-top:6px;border-top:1px solid var(--dk3);font-size:10px;color:var(--g4)}
 .author span{color:#FF9466;font-weight:600}
-.sb-gear{display:flex;align-items:center;gap:7px;padding:8px 20px;font-size:12px;color:var(--g4);cursor:pointer;border-top:1px solid var(--dk3);transition:color .12s;user-select:none}
-.sb-gear:hover{color:var(--og)}
 
 /* ── TOPBAR ── */
 #main{margin-left:var(--sw);display:flex;flex-direction:column;min-height:100vh}
@@ -98,21 +96,12 @@ select.fs:focus{border-color:var(--og)}
 .ksub{font-size:11px;color:var(--g4);margin-top:4px}
 
 /* ── LAYOUT ── */
-.row2{display:grid;grid-template-columns:3fr 2fr;gap:11px;margin-bottom:16px}
 .row2e{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
 .card{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px}
 .cardf{background:var(--wh);border-radius:var(--rad);border:1px solid var(--g2);padding:17px;margin-bottom:16px}
 .ctit{font-size:13px;font-weight:600;color:var(--dk);margin-bottom:3px}
 .csub{font-size:11px;color:var(--g4);margin-bottom:11px}
 .cw{position:relative;width:100%}
-
-/* ── PROGRESS ── */
-.prw{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.prl{font-size:12px;color:var(--dk);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.prb{flex:1;height:6px;background:var(--g2);border-radius:3px;overflow:hidden;min-width:30px}
-.prf{height:6px;border-radius:3px}
-.prv{font-size:11px;color:var(--g5);flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.prp{font-size:11px;color:var(--og);flex:0 0 34px;text-align:right;font-weight:700}
 
 /* ── ALERT ── */
 .alert{display:flex;align-items:flex-start;gap:10px;background:var(--ogp);border:1px solid rgba(232,81,26,.18);border-radius:var(--rad);padding:11px 15px;margin-bottom:16px}
@@ -141,26 +130,20 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .tag-mid{color:var(--am);font-weight:600}
 .tag-ok{color:var(--gn);font-weight:600}
 
-/* ── EVOLUÇÃO DO WORKFLOW: CARRINHO E SOLICITAÇÕES ── */
-.gestor-only, .admin-view-only, .cart-counter { display: none; }
+/* ── NOVOS REQUISITOS DO WORKFLOW: COMPLEMENTOS SEM QUEBRA ── */
 .chk-col { width: 45px; text-align: center !important; }
 .chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
-.cart-counter { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9px; margin-left: auto; }
-#cart-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; animation: slideUp 0.2s ease; }
-@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-/* Inputs e Elementos internos das tabelas editáveis do carrinho */
-.cart-sel { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 0 4px; outline: none; background: var(--g1); }
+.cart-counter-badge { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9px; margin-left: auto; }
+#cart-float-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; }
+.cart-sel { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 0 4px; background: var(--g1); outline: none; }
 .cart-sel:focus { border-color: var(--og); background: #fff; }
-.cart-tx { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 11px; padding: 0 6px; outline: none; background: var(--g1); }
+.cart-tx { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 11px; padding: 0 6px; background: var(--g1); outline: none; }
 .cart-tx:focus { border-color: var(--og); background: #fff; }
-.btn-del { border: none; background: transparent; color: var(--rd); cursor: pointer; font-weight: 600; font-size: 11px; }
-.btn-del:hover { text-decoration: underline; }
-
-/* Blocos de Solicitações Recebidas */
-.sol-card { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-.sol-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
-.sol-badge { background: var(--ogp); color: var(--og); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.btn-del-cart { border: none; background: transparent; color: var(--rd); cursor: pointer; font-weight: 600; font-size: 11px; }
+.btn-del-cart:hover { text-decoration: underline; }
+.sol-block { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; }
+.sol-block-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
+.sol-badge-status { background: var(--ogp); color: var(--og); padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -203,8 +186,8 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="sbs">Navegação</div>
     <div class="ni on" data-pg="visao">📊 Visão Geral</div>
     <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
-    <div class="ni gestor-only" data-pg="carrinho">🛒 Carrinho de Destinação <span class="cart-counter" id="cart-badge">0</span></div>
-    <div class="ni admin-view-only" data-pg="solicitacoes">📋 Solicitações Recebidas</div>
+    <div class="ni" id="menu-carrinho" data-pg="carrinho" style="display:none">🛒 Carrinho <span class="cart-counter-badge" id="cart-count-badge">0</span></div>
+    <div class="ni" id="menu-solicitacoes" data-pg="solicitacoes" style="display:none">📋 Solicitações de Destinação</div>
     <div class="sbs admin-only" style="margin-top:4px">Dados</div>
     <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
   </div>
@@ -256,7 +239,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
       <div style="max-height:560px;overflow-y:auto">
         <table>
           <thead><tr>
-            <th class="chk-col gestor-only"><input type="checkbox" class="chk-box" id="chk-all" onchange="toggleSelectAll(this)"></th>
+            <th class="chk-col" id="th-master-chk" style="display:none"><input type="checkbox" class="chk-box" id="chk-master" onchange="selectAllVisible(this)"></th>
             <th onclick="srt('codigo')">Código</th>
             <th onclick="srt('produto')">Produto</th>
             <th onclick="srt('local')">Local</th>
@@ -276,10 +259,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   <div id="pg-carrinho" class="pg">
     <div class="tw">
       <div class="th2">
-        <div>
-          <div class="ctit">Itens Separados para Destinação</div>
-          <div class="csub">Revise as informações, altere os destinos e observações antes de submeter ao administrador</div>
-        </div>
+        <div><div class="ctit">Carrinho de Destinação Atual</div><div class="csub">Revise e configure o destino de cada item temporário antes de enviar ao administrador</div></div>
       </div>
       <div style="max-height:500px;overflow-y:auto">
         <table style="min-width:100%">
@@ -290,41 +270,40 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
               <th style="padding:9px 11px; font-size:10px">Local</th>
               <th style="padding:9px 11px; font-size:10px; text-align:center">Qtd</th>
               <th style="padding:9px 11px; font-size:10px; text-align:right">Valor Total</th>
-              <th style="padding:9px 11px; font-size:10px; width:180px">Destino Escolhido</th>
-              <th style="padding:9px 11px; font-size:10px; width:220px">Observações</th>
-              <th style="padding:9px 11px; font-size:10px; text-align:center; width:60px">Ações</th>
+              <th style="padding:9px 11px; font-size:10px; width:170px">Destino Definido</th>
+              <th style="padding:9px 11px; font-size:10px; width:220px">Observações adicionais</th>
+              <th style="padding:9px 11px; font-size:10px; text-align:center; width:70px">Ações</th>
             </tr>
           </thead>
           <tbody id="cart-tbody"></tbody>
         </table>
       </div>
       <div class="tfoot" style="padding:15px 17px; background:var(--g1); display:flex; justify-content:space-between; align-items:center;">
-        <div>Total de itens no carrinho: <b id="cart-total-qty">0</b></div>
-        <button class="mbtn" style="width:auto; padding:0 28px; margin:0; height:38px;" onclick="submitSolicitacao()">Solicitar Destino</button>
+        <div>Volumetria do Lote: <b id="cart-qty-summary">0</b> item(ns) regulados</div>
+        <button class="mbtn" style="width:auto; padding:0 24px; margin:0; height:38px;" onclick="dispatchLoteDestinacao()">Solicitar Destino</button>
       </div>
     </div>
   </div>
 
   <div id="pg-solicitacoes" class="pg">
-    <div id="sol-container"></div>
+    <div id="admin-sol-wrapper"></div>
   </div>
 </div>
 
-<div id="cart-bar">
-  <div><b id="cart-bar-count">0</b> item(ns) selecionado(s)</div>
-  <button class="mbtn" style="width:auto; padding:0 20px; height:34px; margin:0;" onclick="addAllToCart()">Adicionar ao Carrinho</button>
+<div id="cart-float-bar">
+  <div>⚡ <b id="cart-float-count">0</b> item(ns) marcados para encaminhamento</div>
+  <button class="mbtn" style="width:auto; padding:0 20px; height:34px; margin:0;" onclick="pushSelectedToCart()">Adicionar ao Carrinho</button>
 </div>
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIGURAÇÃO DO SISTEMA EXTRAPOLADA
+//  CONFIGURAÇÃO DO SISTEMA E LINKS
 // ══════════════════════════════════════════
 const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
 const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
 const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
 
-// Perfis de Acesso Estendidos
 const AUTH_ADMIN_USER  = 'admin';
 const AUTH_ADMIN_PWD   = 'admin@energia';
 const AUTH_VIEW_USER   = 'viewer';
@@ -333,9 +312,9 @@ const AUTH_GEST_USER   = 'gestor';
 const AUTH_GEST_PWD    = 'gestor2026';
 
 let currentRole = null;
-let checkedItems = {};  // Estado temporário dos checkboxes na tabela de listagem
+let itemCheckState = {}; // Guarda a seleção de checkboxes da tabela principal
 
-// ── AUTENTICAÇÃO E PERMISSÕES ────────────────────────
+// ── AUTENTICAÇÃO INTEGRAL ──────────────────
 function doLogin(){
   const user = document.getElementById('luser').value.trim();
   const pwd  = document.getElementById('lpwd').value;
@@ -356,34 +335,26 @@ function doLogin(){
   
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('loading').style.display = 'flex';
-  applyRole();
+  configureProfileMenus();
   loadData();
 }
 
-function applyRole(){
+function configureProfileMenus(){
   const isAdmin = currentRole === 'admin';
   const isGestor = currentRole === 'gestor';
   
-  document.querySelectorAll('.admin-only').forEach(el=>{
-    el.style.display = isAdmin ? '' : 'none';
-  });
+  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = isAdmin ? '' : 'none');
+  document.getElementById('menu-carrinho').style.display = isGestor ? 'flex' : 'none';
+  document.getElementById('menu-solicitacoes').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('th-master-chk').style.display = isGestor ? '' : 'none';
   
-  document.querySelectorAll('.admin-view-only').forEach(el=>{
-    el.style.display = (isAdmin || isGestor) ? '' : 'none';
-  });
-  
-  document.querySelectorAll('.gestor-only').forEach(el=>{
-    el.style.display = isGestor ? '' : 'none';
-  });
-  
-  const badge = document.getElementById('role-badge');
-  if(badge){
-    if(isAdmin) { badge.textContent = '👑 Administrador'; badge.style.color = 'var(--og)'; }
-    else if(isGestor) { badge.textContent = '💼 Gestor'; badge.style.color = 'var(--bl)'; }
-    else { badge.textContent = '👤 Visualizador'; badge.style.color = 'var(--gn)'; }
+  const b = document.getElementById('role-badge');
+  if(b){
+    if(isAdmin) { b.textContent = '👑 Administrador'; b.style.color = 'var(--og)'; }
+    else if(isGestor) { b.textContent = '💼 Gestor'; b.style.color = 'var(--bl)'; }
+    else { b.textContent = '👤 Visualizador'; b.style.color = 'var(--gn)'; }
   }
-  
-  updateCartBadge();
+  refreshCartIconBadge();
 }
 
 function eye(id, el){
@@ -395,12 +366,10 @@ function eye(id, el){
 document.getElementById('lpwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 document.getElementById('luser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-function openSheet(){ 
-  if (currentRole === 'admin') { window.open(SHEET_URL, '_blank'); }
-}
+function openSheet(){ if (currentRole === 'admin') window.open(SHEET_URL, '_blank'); }
 
 // ══════════════════════════════════════════
-//  GERENCIAMENTO DA PLANILHA E PROXIES
+//  PARSERS ORIGINAIS (CONEXÃO E DERIVAÇÃO)
 // ══════════════════════════════════════════
 let RAW=[], FILT=[], SALDO={}, sk='valorTotal', sd=-1;
 
@@ -410,6 +379,8 @@ const fAX   = v => v>=1e6 ? 'R$'+(v/1e6).toFixed(1)+'M' : v>=1e3 ? 'R$'+(v/1e3).
 const CL = ['#E8511A','#1A5FA8','#2EA86B','#D4830A','#9B59B6','#D43A3A','#16A085','#C0621A','#2980B9','#1B7A45'];
 let CH = {};
 const dch = id => { if(CH[id]){ CH[id].destroy(); delete CH[id]; } };
+
+const CO = {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#E8E8E8'},ticks:{font:{size:10}}}}};
 
 function proxyUrls(base){
   const ts = Date.now();
@@ -497,7 +468,7 @@ function parseObsoletos(txt){
     const dt = iData>=0 ? parseDateBR(c[iData]) : null;
     const diasParado = dt ? Math.round((hoje-dt)/86400000) : null;
     rows.push({
-      id       : (c[iCod]||'').replace(/"/g,'').trim() + '-' + local,
+      uid      : (c[iCod]||'').replace(/"/g,'').trim() + '||' + local,
       codigo   : (c[iCod]||'').replace(/"/g,'').trim(),
       produto  : (c[iNome]||'').replace(/"/g,'').trim(),
       valorUnit: iVU>=0 ? pNum(c[iVU]) : 0,
@@ -543,7 +514,7 @@ function grp(arr, key){
 }
 const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
 
-// ── LOADING DATA ──────────────────────────
+// ── FLUXO DE CARGA PRINCIPAL ──────────────
 async function loadData(manual=false){
   const btn = document.getElementById('bsync');
   if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
@@ -556,7 +527,7 @@ async function loadData(manual=false){
       fetchCSV(URL_SALDO, 'Saldo de Estoque')
     ]);
     const data = parseObsoletos(csvObs);
-    if(!data.length) throw new Error('Nenhum dado em Estoque Obsoletos.');
+    if(!data.length) throw new Error('Nenhum dado válido processado.');
     SALDO = parseSaldo(csvSaldo);
 
     RAW = data; FILT = [...RAW];
@@ -572,8 +543,8 @@ async function loadData(manual=false){
 
     if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
 
-    const pg = document.querySelector('.ni.on');
-    renderPg(pg ? pg.dataset.pg : 'visao');
+    const activeMenu = document.querySelector('.ni.on');
+    renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
 
   } catch(e){
     console.error(e);
@@ -586,12 +557,12 @@ async function loadData(manual=false){
   }
 }
 
-// ── NAVEGAÇÃO ENTRE ABAS ───────────────────
+// ── NAVEGAÇÃO ENTRE ABAS PRESERVADA ───────
 let uiOn = false;
 function initUI(){
   if(uiOn) return; uiOn = true;
-  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'Carrinho de Destinação',solicitacoes:'Solicitações Recebidas'};
-  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos',carrinho:'Gerencie e revise os itens selecionados antes de disparar a destinação',solicitacoes:'Histórico de fluxos e destinações homologadas e enviadas pelos Gestores'};
+  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'🛒 Carrinho de Destinação',solicitacoes:'📋 Solicitações de Destinação'};
+  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista de itens identificados como obsoletos no sistema',carrinho:'Gerencie materiais adicionados, defina destinações e revise antes de enviar',solicitacoes:'Histórico de fluxos e destinações oficialmente enviadas pelos Gestores'};
   
   document.querySelectorAll('.ni[data-pg]').forEach(n=>{
     n.onclick = function(){
@@ -603,8 +574,8 @@ function initUI(){
       document.getElementById('ttl').textContent = titles[id];
       document.getElementById('tsub').textContent = subs[id];
       
-      if (id !== 'itens') { document.getElementById('cart-bar').style.display = 'none'; }
-      else { updateCartBar(); }
+      if (id !== 'itens') { document.getElementById('cart-float-bar').style.display = 'none'; }
+      else { refreshFloatBar(); }
       
       applyF();
     };
@@ -614,13 +585,15 @@ function initUI(){
 function applyF(){
   const fl=document.getElementById('floc').value;
   FILT = RAW.filter(r=> !fl || r.local===fl);
-  const pg = document.querySelector('.pg.on'); if(pg) renderPg(pg.id.replace('pg-',''));
+  const activePg = document.querySelector('.pg.on'); 
+  if(activePg) renderTab(activePg.id.replace('pg-',''));
 }
 function resetF(){
   document.getElementById('floc').value='';
   document.getElementById('tsrch').value='';
   FILT = [...RAW];
-  const pg = document.querySelector('.pg.on'); if(pg) renderPg(pg.id.replace('pg-',''));
+  const activePg = document.querySelector('.pg.on'); 
+  if(activePg) renderTab(activePg.id.replace('pg-',''));
 }
 function initFilters(){
   const el=document.getElementById('floc'); while(el.options.length>1)el.remove(1);
@@ -628,8 +601,8 @@ function initFilters(){
     .forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
 }
 
-// ── RENDERIZAÇÃO DE TELAS ─────────────────
-function renderPg(id){
+// ── CENTRAL DE RENDERIZAÇÃO DE ABAS ───────
+function renderTab(id){
   const tot = FILT.reduce((s,r)=>s+r.valorTotal,0);
   const saldoTotalGeral = Object.values(SALDO).reduce((s,v)=>s+v,0);
 
@@ -669,28 +642,26 @@ function renderPg(id){
   }
 
   if(id==='itens') renderTbl(FILT);
-  if(id==='carrinho') renderCarrinho();
-  if(id==='solicitacoes') renderSolicitacoes();
+  if(id==='carrinho') renderMóduloCarrinho();
+  if(id==='solicitacoes') renderMóduloSolicitacoes();
 }
 
-// ── TABELA DE ITENS ───────────────────────
+// ── RENDERIZADOR INTEGRAL DA TABELA PRINCIPAL ──
 function renderTbl(data){
   const sorted = [...data].sort((a,b)=>{ const av=a[sk], bv=b[sk]; return (typeof av==='number'?av-bv:String(av).localeCompare(String(bv)))*sd; });
   document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
   document.getElementById('tfl').textContent = sorted.length+' itens';
   
   const isGestor = currentRole === 'gestor';
-  const cart = getCart();
+  const cart = readCartData();
 
   document.getElementById('tbody').innerHTML = sorted.map(r=>{
     const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
-    
-    // Se o item já estiver no carrinho, ele não pode ser selecionado novamente (ou fica travado)
-    const inCart = cart[r.id] ? 'disabled title="Já está no carrinho"' : '';
-    const isChecked = checkedItems[r.id] ? 'checked' : '';
+    const isLocked = cart[r.uid] ? 'disabled title="Armazenado no Carrinho"' : '';
+    const isChecked = itemCheckState[r.uid] ? 'checked' : '';
     
     return '<tr>'
-      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box chk-item" data-id="${r.id}" ${isChecked} ${inCart} onchange="handleSelect(this)"></td>` : '')
+      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box sub-chk" data-uid="${r.uid}" ${isChecked} ${isLocked} onchange="catchSelection(this)"></td>` : '')
       +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
       +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
       +'<td><span class="bdg">'+r.local+'</span></td>'
@@ -701,8 +672,9 @@ function renderTbl(data){
       +'<td class="nm '+diasCls+'">'+(r.diasParado>=0?r.diasParado:'—')+'</td>'
       +'</tr>';
   }).join('');
-  updH();
-  if(isGestor) updateCartBar();
+  
+  marcarCabecalhoOrdenacao();
+  if(isGestor) refreshFloatBar();
 }
 
 function ftbl(q){
@@ -710,226 +682,234 @@ function ftbl(q){
   renderTbl(FILT.filter(r=>r.produto.toLowerCase().includes(lq)||r.codigo.toLowerCase().includes(lq)||r.local.toLowerCase().includes(lq)));
 }
 function srt(key){ if(sk===key) sd*=-1; else{sk=key;sd=-1;} ftbl(document.getElementById('tsrch').value); }
-function updH(){
-  document.querySelectorAll('#pg-itens thead th').forEach(t=>t.classList.remove('sa','sd'));
-}
 
-// ══════════════════════════════════════════
-//  LÓGICA DO CARRINHO DE DESTINAÇÃO (WORKFLOW)
-// ══════════════════════════════════════════
-function getCart() { return JSON.parse(localStorage.getItem('energia_carrinho') || '{}'); }
-function saveCart(cart) { localStorage.setItem('energia_carrinho', JSON.stringify(cart)); updateCartBadge(); }
-
-function updateCartBadge() {
-  const cart = getCart();
-  const size = Object.keys(cart).length;
-  const badge = document.getElementById('cart-badge');
-  if(badge) {
-    badge.textContent = size;
-    badge.style.display = size > 0 ? 'inline-block' : 'none';
-  }
-}
-
-function handleSelect(el) {
-  if (el.checked) { checkedItems[el.dataset.id] = true; } 
-  else { delete checkedItems[el.dataset.id]; }
-  updateCartBar();
-}
-
-function toggleSelectAll(el) {
-  document.querySelectorAll('.chk-item:not([disabled])').forEach(chk => {
-    chk.checked = el.checked;
-    handleSelect(chk);
+function marcarCabecalhoOrdenacao(){
+  document.querySelectorAll('#pg-itens thead th').forEach(t=>{
+    t.classList.remove('sa','sd');
+    if(t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${sk}'`)){
+      t.classList.add(sd===-1?'sd':'sa');
+    }
   });
 }
 
-function updateCartBar() {
-  const count = Object.keys(checkedItems).length;
-  const bar = document.getElementById('cart-bar');
-  if (currentRole === 'gestor' && count > 0 && document.getElementById('pg-itens').classList.contains('on')) {
-    document.getElementById('cart-bar-count').textContent = count;
+// ══════════════════════════════════════════
+//  LÓGICA ISOLADA: CARRINHO DE DESTINAÇÃO
+// ══════════════════════════════════════════
+function readCartData() { return JSON.parse(localStorage.getItem('pool_carrinho_energia') || '{}'); }
+function writeCartData(obj) { localStorage.setItem('pool_carrinho_energia', JSON.stringify(obj)); refreshCartIconBadge(); }
+
+function refreshCartIconBadge() {
+  const cart = readCartData();
+  const len = Object.keys(cart).length;
+  const b = document.getElementById('cart-count-badge');
+  if(b) {
+    b.textContent = len;
+    b.style.display = len > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function catchSelection(el) {
+  if (el.checked) { itemCheckState[el.dataset.uid] = true; } 
+  else { delete itemCheckState[el.dataset.uid]; }
+  refreshFloatBar();
+}
+
+function selectAllVisible(master) {
+  document.querySelectorAll('.sub-chk:not([disabled])').forEach(chk => {
+    chk.checked = master.checked;
+    catchSelection(chk);
+  });
+}
+
+function refreshFloatBar() {
+  const cnt = Object.keys(itemCheckState).length;
+  const bar = document.getElementById('cart-float-bar');
+  if (currentRole === 'gestor' && cnt > 0 && document.getElementById('pg-itens').classList.contains('on')) {
+    document.getElementById('cart-float-count').textContent = cnt;
     bar.style.display = 'flex';
   } else {
     bar.style.display = 'none';
   }
 }
 
-function addAllToCart() {
-  const cart = getCart();
-  Object.keys(checkedItems).forEach(id => {
-    const item = RAW.find(r => r.id === id);
-    if (item && !cart[id]) {
-      cart[id] = {
-        ...item,
-        destino: 'Aguardando Avaliação',
-        obsGeral: ''
+function pushSelectedToCart() {
+  const cart = readCartData();
+  Object.keys(itemCheckState).forEach(uid => {
+    const orig = RAW.find(r => r.uid === uid);
+    if (orig && !cart[uid]) {
+      cart[uid] = {
+        ...orig,
+        destinoSelected: 'Venda',
+        observacaoGestor: ''
       };
     }
   });
-  saveCart(cart);
-  checkedItems = {};
-  document.getElementById('chk-all').checked = false;
-  alert('🛒 Itens adicionados com sucesso ao seu menu Carrinho!');
+  writeCartData(cart);
+  itemCheckState = {};
+  document.getElementById('chk-master').checked = false;
+  alert('🛒 Materiais adicionados com sucesso ao lote de preparação do Carrinho!');
   applyF();
 }
 
-function renderCarrinho() {
-  const cart = getCart();
-  const tbody = document.getElementById('cart-tbody');
-  const keys = Object.keys(cart);
+function renderMóduloCarrinho() {
+  const cart = readCartData();
+  const tb = document.getElementById('cart-tbody');
+  const uids = Object.keys(cart);
   
-  if (keys.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--g4)">Seu carrinho está vazio. Vá até a aba "Itens Obsoletos" e separe materiais.</td></tr>`;
-    document.getElementById('cart-total-qty').textContent = 0;
+  if (uids.length === 0) {
+    tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:45px; color:var(--g4)">Nenhum material pendente no carrinho. Acesse "Itens Obsoletos" e faça a seleção.</td></tr>`;
+    document.getElementById('cart-qty-summary').textContent = 0;
     return;
   }
   
-  document.getElementById('cart-total-qty').textContent = keys.length;
+  document.getElementById('cart-qty-summary').textContent = uids.length;
   
-  tbody.innerHTML = keys.map(id => {
-    const item = cart[id];
+  tb.innerHTML = uids.map(uid => {
+    const i = cart[uid];
     return `
-      <tr id="cart-row-${id}">
-        <td style="color:#888; font-size:11px">${item.codigo}</td>
-        <td><b>${item.produto}</b></td>
-        <td><span class="bdg">${item.local}</span></td>
-        <td style="text-align:center">${item.qtd}</td>
-        <td class="nm">${fBRL(item.valorTotal)}</td>
+      <tr id="cart-item-${uid}">
+        <td style="color:#777; font-size:11px; font-variant-numeric:tabular-nums">${i.codigo}</td>
+        <td><b>${i.produto}</b></td>
+        <td><span class="bdg">${i.local}</span></td>
+        <td style="text-align:center">${i.qtd}</td>
+        <td class="nm">${fBRL(i.valorTotal)}</td>
         <td>
-          <select class="cart-sel" onchange="updateCartItemField('${id}', 'destino', this.value)">
-            <option value="Aguardando Avaliação" ${item.destino==='Aguardando Avaliação'?'selected':''}>Aguardando Avaliação</option>
-            <option value="Venda" ${item.destino==='Venda'?'selected':''}>Venda</option>
-            <option value="Doação" ${item.destino==='Doação'?'selected':''}>Doação</option>
-            <option value="Transferência" ${item.destino==='Transferência'?'selected':''}>Transferência</option>
-            <option value="Reaproveitamento Interno" ${item.destino==='Reaproveitamento Interno'?'selected':''}>Reaproveitamento Interno</option>
-            <option value="Recuperação / Reforma" ${item.destino==='Recuperação / Reforma'?'selected':''}>Recuperação / Reforma</option>
-            <option value="Sucata" ${item.destino==='Sucata'?'selected':''}>Sucata</option>
-            <option value="Descarte" ${item.destino==='Descarte'?'selected':''}>Descarte</option>
+          <select class="cart-sel" onchange="alterarPropriedadeItemCarrinho('${uid}', 'destinoSelected', this.value)">
+            <option value="Venda" ${i.destinoSelected==='Venda'?'selected':''}>Venda</option>
+            <option value="Doação" ${i.destinoSelected==='Doação'?'selected':''}>Doação</option>
+            <option value="Reaproveitamento" ${i.destinoSelected==='Reaproveitamento'?'selected':''}>Reaproveitamento</option>
+            <option value="Descarte" ${i.destinoSelected==='Descarte'?'selected':''}>Descarte</option>
+            <option value="Transferência" ${i.destinoSelected==='Transferência'?'selected':''}>Transferência</option>
+            <option value="Recuperação" ${i.destinoSelected==='Recuperação'?'selected':''}>Recuperação</option>
+            <option value="Outro" ${i.destinoSelected==='Outro'?'selected':''}>Outro</option>
           </select>
         </td>
         <td>
-          <input type="text" class="cart-tx" placeholder="Nota/Motivo..." value="${item.obsGeral || ''}" oninput="updateCartItemField('${id}', 'obsGeral', this.value)">
+          <input type="text" class="cart-tx" placeholder="Escreva observações aqui..." value="${i.observacaoGestor || ''}" oninput="alterarPropriedadeItemCarrinho('${uid}', 'observacaoGestor', this.value)">
         </td>
         <td style="text-align:center">
-          <button class="btn-del" onclick="removeCartItem('${id}')">Remover</button>
+          <button class="btn-del-cart" onclick="eliminarDoCarrinho('${uid}')">Remover</button>
         </td>
       </tr>
     `;
   }).join('');
 }
 
-function updateCartItemField(id, field, value) {
-  const cart = getCart();
-  if (cart[id]) {
-    cart[id][field] = value;
-    localStorage.setItem('energia_carrinho', JSON.stringify(cart));
+function alterarPropriedadeItemCarrinho(uid, prop, val) {
+  const cart = readCartData();
+  if (cart[uid]) {
+    cart[uid][prop] = val;
+    localStorage.setItem('pool_carrinho_energia', JSON.stringify(cart));
   }
 }
 
-function removeCartItem(id) {
-  const cart = getCart();
-  delete cart[id];
-  saveCart(cart);
-  renderCarrinho();
+function eliminarDoCarrinho(uid) {
+  const cart = readCartData();
+  delete cart[uid];
+  writeCartData(cart);
+  renderMóduloCarrinho();
 }
 
-function submitSolicitacao() {
-  const cart = getCart();
-  const itemsArray = Object.values(cart);
+function dispatchLoteDestinacao() {
+  const cart = readCartData();
+  const list = Object.values(cart);
   
-  if (itemsArray.length === 0) {
+  if (list.length === 0) {
     alert('❌ O carrinho está vazio!');
     return;
   }
   
-  if (confirm(`Confirma o envio desta solicitação contendo ${itemsArray.length} item(ns) para o Administrador?`)) {
-    const novaSolicitacao = {
-      id: 'SOL-' + Date.now(),
-      gestor: AUTH_GEST_USER,
-      data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-      status: 'Pendente Análise',
-      itensCount: itemsArray.length,
-      itens: itemsArray.map(i => ({
-        codigo: i.codigo,
-        produto: i.produto,
-        local: i.local,
-        qtd: i.qtd,
-        valorTotal: i.valorTotal,
-        destino: i.destino,
-        obs: i.obsGeral || '—'
+  if (confirm(`Deseja despachar oficialmente essa solicitação com ${list.length} material(is) regulamentado(s)?`)) {
+    const sId = 'WF-' + Date.now().toString().slice(-6);
+    const compactado = {
+      uidWorkflow: sId,
+      solicitante: AUTH_GEST_USER,
+      timestamp: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+      statusGlobal: 'Aguardando Aprovação',
+      totalItens: list.length,
+      loteItens: list.map(m => ({
+        codigo: m.codigo,
+        produto: m.produto,
+        local: m.local,
+        qtd: m.qtd,
+        valorTotal: m.valorTotal,
+        destino: m.destinoSelected,
+        obs: m.observacaoGestor || '—'
       }))
     };
     
-    // Armazena na fila de solicitações finais
-    let solicitacoes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
-    solicitacoes.unshift(novaSolicitacao);
-    localStorage.setItem('energia_solicitacoes', JSON.stringify(solicitacoes));
+    let bancoSolicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+    bancoSolicitacoes.unshift(compactado);
+    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(bancoSolicitacoes));
     
-    // Limpa o carrinho permanentemente
-    localStorage.removeItem('energia_carrinho');
-    updateCartBadge();
+    // Limpeza completa pós envio
+    localStorage.removeItem('pool_carrinho_energia');
+    refreshCartIconBadge();
     
-    alert('🚀 Workflow concluído! Solicitação gravada com sucesso e enviada ao Administrador.');
-    renderCarrinho();
+    alert('🚀 Solicitação cadastrada e transmitida à Área do Administrador.');
+    renderMóduloCarrinho();
   }
 }
 
-function renderSolicitacoes() {
-  const container = document.getElementById('sol-container');
-  const solicitacoes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
+// ══════════════════════════════════════════
+//  LÓGICA ISOLADA: ÁREA DO ADMINISTRADOR
+// ══════════════════════════════════════════
+function renderMóduloSolicitacoes() {
+  const wrapper = document.getElementById('admin-sol-wrapper');
+  const solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
   
   if (solicitacoes.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:50px; color:var(--g4)">
-        <span style="font-size:42px">📋</span>
-        <p style="margin-top:12px; font-size:13px">Nenhuma solicitação de destinação foi transmitida até o momento.</p>
+    wrapper.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:var(--g4)">
+        <span style="font-size:36px">📋</span>
+        <p style="margin-top:10px; font-size:13px">Nenhum pedido ou workflow de destinação enviado até o momento.</p>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = solicitacoes.map(sol => {
-    let rowsHtml = sol.itens.map(i => `
+  wrapper.innerHTML = solicitacoes.map(sol => {
+    let tRows = sol.loteItens.map(li => `
       <tr style="border-bottom:1px solid var(--g1)">
-        <td style="padding:7px 9px; color:var(--g5)">${i.codigo}</td>
-        <td style="padding:7px 9px; font-weight:500">${i.produto}</td>
-        <td style="padding:7px 9px;"><span class="bdg">${i.local}</span></td>
-        <td style="padding:7px 9px; text-align:center">${i.qtd}</td>
-        <td style="padding:7px 9px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(i.valorTotal)}</td>
-        <td style="padding:7px 9px; font-weight:600; color:var(--bl)">${i.destino}</td>
-        <td style="padding:7px 9px; color:var(--g4); font-size:11px">${i.obs}</td>
+        <td style="padding:8px; color:var(--g5)">${li.codigo}</td>
+        <td style="padding:8px; font-weight:500">${li.produto}</td>
+        <td style="padding:8px;"><span class="bdg">${li.local}</span></td>
+        <td style="padding:8px; text-align:center">${li.qtd}</td>
+        <td style="padding:8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
+        <td style="padding:8px; font-weight:700; color:var(--bl)">${li.destino}</td>
+        <td style="padding:8px; color:var(--g4); font-size:11px; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${li.obs}">${li.obs}</td>
       </tr>
     `).join('');
 
     return `
-      <div class="sol-card">
-        <div class="sol-head">
+      <div class="sol-block">
+        <div class="sol-block-header">
           <div>
-            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${sol.id}</div>
-            <div style="font-size:11px; color:var(--g4); margin-top:2px">Gestor Solicitante: <b>${sol.gestor}</b> | Data/Hora: ${sol.data}</div>
+            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow: ${sol.uidWorkflow}</div>
+            <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${sol.solicitante}</b> | Recebido em: ${sol.timestamp}</div>
           </div>
-          <span class="sol-badge">${sol.status}</span>
+          <span class="sol-badge-status">${sol.statusGlobal}</span>
         </div>
         <div style="overflow-x:auto">
-          <table style="min-width:100%; font-size:11px; margin-top:6px">
+          <table style="min-width:100%; font-size:11px;">
             <thead>
               <tr style="background:var(--g1); color:var(--dk)">
-                <th style="padding:6px 8px; color:var(--dk)">Código</th>
-                <th style="padding:6px 8px; color:var(--dk)">Produto</th>
-                <th style="padding:6px 8px; color:var(--dk)">Local</th>
-                <th style="padding:6px 8px; color:var(--dk); text-align:center">Qtd</th>
-                <th style="padding:6px 8px; color:var(--dk); text-align:right">Valor Total</th>
-                <th style="padding:6px 8px; color:var(--dk)">Destino Escolhido</th>
-                <th style="padding:6px 8px; color:var(--dk)">Observação</th>
+                <th style="padding:7px 8px; color:var(--dk)">Código</th>
+                <th style="padding:7px 8px; color:var(--dk)">Produto</th>
+                <th style="padding:7px 8px; color:var(--dk)">Local</th>
+                <th style="padding:7px 8px; color:var(--dk); text-align:center">Qtd</th>
+                <th style="padding:7px 8px; color:var(--dk); text-align:right">Valor Total</th>
+                <th style="padding:7px 8px; color:var(--dk)">Destino</th>
+                <th style="padding:7px 8px; color:var(--dk)">Observações</th>
               </tr>
             </thead>
             <tbody>
-              ${rowsHtml}
+              ${tRows}
             </tbody>
           </table>
         </div>
         <div style="text-align:right; font-size:11px; color:var(--g5); margin-top:12px; font-weight:600">
-          Quantidade Total de Itens: ${sol.itensCount}
+          Volumetria Total do Lote: ${sol.totalItens} item(ns) regulados
         </div>
       </div>
     `;
