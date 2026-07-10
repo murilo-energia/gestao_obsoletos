@@ -130,7 +130,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .tag-mid{color:var(--am);font-weight:600}
 .tag-ok{color:var(--gn);font-weight:600}
 
-/* ── NOVOS REQUISITOS DO WORKFLOW: COMPLEMENTOS SEM QUEBRA ── */
+/* ── REQUISITOS DO WORKFLOW ── */
 .chk-col { width: 45px; text-align: center !important; }
 .chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
 .cart-counter-badge { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 9px; margin-left: auto; }
@@ -144,6 +144,14 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .sol-block { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; }
 .sol-block-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
 .sol-badge-status { background: var(--ogp); color: var(--og); padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+
+/* ── ABAS INTERNAS ADMIN ── */
+.admin-tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid var(--g2); margin-bottom: 16px; }
+.admin-tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--g4); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.admin-tab-btn:hover { color: var(--dk); }
+.admin-tab-btn.active { color: var(--og); border-bottom-color: var(--og); }
+.admin-select-status { height: 30px; padding: 0 6px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; background: var(--g1); color: var(--dk); outline: none; cursor: pointer; font-weight: 600; }
+.admin-select-status:focus { border-color: var(--bl); }
 </style>
 </head>
 <body>
@@ -187,7 +195,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="ni on" data-pg="visao">📊 Visão Geral</div>
     <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
     <div class="ni" id="menu-carrinho" data-pg="carrinho" style="display:none">🛒 Carrinho <span class="cart-counter-badge" id="cart-count-badge">0</span></div>
-    <div class="ni" id="menu-solicitacoes" data-pg="solicitacoes" style="display:none">📋 Solicitações de Destinação</div>
+    <div class="ni" id="menu-solicitacoes" data-pg="solicitacoes" style="display:none">📋 Solicitações de Destinação <span class="cart-counter-badge" id="sol-count-badge" style="background:var(--rd)">0</span></div>
     <div class="sbs admin-only" style="margin-top:4px">Dados</div>
     <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
   </div>
@@ -286,6 +294,10 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   </div>
 
   <div id="pg-solicitacoes" class="pg">
+    <div class="admin-tabs-nav">
+      <button class="admin-tab-btn active" id="btn-tab-pendentes" onclick="switchAdminTab('pendentes')">Pendentes</button>
+      <button class="admin-tab-btn" id="btn-tab-historico" onclick="switchAdminTab('historico')">Histórico (Concluídas / Canceladas)</button>
+    </div>
     <div id="admin-sol-wrapper"></div>
   </div>
 </div>
@@ -312,7 +324,8 @@ const AUTH_GEST_USER   = 'gestor';
 const AUTH_GEST_PWD    = 'gestor2026';
 
 let currentRole = null;
-let itemCheckState = {}; // Guarda a seleção de checkboxes da tabela principal
+let itemCheckState = {};
+let currentAdminViewTab = 'pendentes';
 
 // ── AUTENTICAÇÃO INTEGRAL ──────────────────
 function doLogin(){
@@ -355,6 +368,7 @@ function configureProfileMenus(){
     else { b.textContent = '👤 Visualizador'; b.style.color = 'var(--gn)'; }
   }
   refreshCartIconBadge();
+  refreshAdminIconBadge();
 }
 
 function eye(id, el){
@@ -542,6 +556,11 @@ async function loadData(manual=false){
     document.getElementById('main').style.display = 'flex';
 
     if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
+
+    // INTEGRAÇÃO INTELIGENTE DE ATUALIZAÇÃO DA PLANILHA (ADMIN ONLY)
+    if (currentRole === 'admin') {
+      executarVerificacaoInteligenteEstoque();
+    }
 
     const activeMenu = document.querySelector('.ni.on');
     renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
@@ -825,7 +844,7 @@ function dispatchLoteDestinacao() {
       uidWorkflow: sId,
       solicitante: AUTH_GEST_USER,
       timestamp: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-      statusGlobal: 'Aguardando Aprovação',
+      statusGlobal: 'Aguardando Análise',
       totalItens: list.length,
       loteItens: list.map(m => ({
         codigo: m.codigo,
@@ -842,33 +861,122 @@ function dispatchLoteDestinacao() {
     bancoSolicitacoes.unshift(compactado);
     localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(bancoSolicitacoes));
     
-    // Limpeza completa pós envio
     localStorage.removeItem('pool_carrinho_energia');
     refreshCartIconBadge();
+    refreshAdminIconBadge();
     
-    alert('🚀 Solicitação cadastrada e transmitida à Área do Administrador.');
+    alert('🚀 Solicitação cadastrada e transmitida à Área do Administrador com status "Aguardando Análise".');
     renderMóduloCarrinho();
   }
 }
 
 // ══════════════════════════════════════════
-//  LÓGICA ISOLADA: ÁREA DO ADMINISTRADOR
+//  EVOLUÇÃO DO WORKFLOW: ADMINISTRADOR
 // ══════════════════════════════════════════
+function refreshAdminIconBadge() {
+  const solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  const pendentesCount = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento').length;
+  
+  const b = document.getElementById('sol-count-badge');
+  if(b) {
+    b.textContent = pendentesCount;
+    b.style.display = pendentesCount > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function switchAdminTab(tabName) {
+  currentAdminViewTab = tabName;
+  document.getElementById('btn-tab-pendentes').classList.toggle('active', tabName === 'pendentes');
+  document.getElementById('btn-tab-historico').classList.toggle('active', tabName === 'historico');
+  renderMóduloSolicitacoes();
+}
+
+function alterarStatusWorkflow(uidWorkflow, novoStatus) {
+  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
+  if (idx >= 0) {
+    solicitacoes[idx].statusGlobal = novoStatus;
+    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
+    refreshAdminIconBadge();
+    renderMóduloSolicitacoes();
+  }
+}
+
+function concluirWorkflowAdmin(uidWorkflow) {
+  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
+  if (idx >= 0) {
+    solicitacoes[idx].statusGlobal = 'Concluída';
+    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
+    alert(`🎯 Workflow ${uidWorkflow} marcado como Concluído e transferido para o Histórico!`);
+    refreshAdminIconBadge();
+    renderMóduloSolicitacoes();
+  }
+}
+
+function executaConclusaoAutomaticaLote(uidWorkflow) {
+  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  const idx = solicitacoes.findIndex(s => s.uidWorkflow === uidWorkflow);
+  if (idx >= 0) {
+    solicitacoes[idx].statusGlobal = 'Concluída';
+    localStorage.setItem('pool_solicitacoes_energia', JSON.stringify(solicitacoes));
+  }
+}
+
+function executarVerificacaoInteligenteEstoque() {
+  let solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
+  let pendentes = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento');
+  
+  if (pendentes.length === 0) return;
+
+  // Mapeia códigos que ainda restam na planilha carregada
+  const codigosExistentesAtuais = new Set(RAW.map(r => r.codigo));
+  let atualizouAlgum = false;
+
+  pendentes.forEach(sol => {
+    // Verifica se TODOS os itens do lote sumiram da base ativa
+    const todosSumiram = sol.loteItens.every(item => !codigosExistentesAtuais.has(item.codigo));
+    
+    if (todosSumiram) {
+      const resposta = confirm(`📊 [Análise Inteligente de Sincronização]\n\nTodos os itens da solicitação "${sol.uidWorkflow}" (Solicitante: ${sol.solicitante}) não existem mais na base de estoque ativa.\n\nDeseja marcar automaticamente esta solicitação como "Concluída"?`);
+      if (resposta) {
+        executaConclusaoAutomaticaLote(sol.uidWorkflow);
+        atualizouAlgum = true;
+      }
+    }
+  });
+
+  if (atualizouAlgum) {
+    refreshAdminIconBadge();
+    if (document.getElementById('pg-solicitacoes').classList.contains('on')) {
+      renderMóduloSolicitacoes();
+    }
+  }
+}
+
 function renderMóduloSolicitacoes() {
   const wrapper = document.getElementById('admin-sol-wrapper');
   const solicitacoes = JSON.parse(localStorage.getItem('pool_solicitacoes_energia') || '[]');
   
-  if (solicitacoes.length === 0) {
+  // Filtra dependendo da aba ativa
+  let filtradas = [];
+  if (currentAdminViewTab === 'pendentes') {
+    filtradas = solicitacoes.filter(s => s.statusGlobal === 'Aguardando Análise' || s.statusGlobal === 'Em Processamento');
+  } else {
+    filtradas = solicitacoes.filter(s => s.statusGlobal === 'Concluída' || s.statusGlobal === 'Cancelada');
+  }
+  
+  if (filtradas.length === 0) {
     wrapper.innerHTML = `
       <div style="text-align:center; padding:60px 20px; color:var(--g4)">
         <span style="font-size:36px">📋</span>
-        <p style="margin-top:10px; font-size:13px">Nenhum pedido ou workflow de destinação enviado até o momento.</p>
+        <p style="margin-top:10px; font-size:13px">Nenhuma solicitação encontrada nesta seção (${currentAdminViewTab === 'pendentes' ? 'Pendentes' : 'Histórico'}).</p>
       </div>
     `;
     return;
   }
   
-  wrapper.innerHTML = solicitacoes.map(sol => {
+  wrapper.innerHTML = filtradas.map(sol => {
     let tRows = sol.loteItens.map(li => `
       <tr style="border-bottom:1px solid var(--g1)">
         <td style="padding:8px; color:var(--g5)">${li.codigo}</td>
@@ -881,6 +989,22 @@ function renderMóduloSolicitacoes() {
       </tr>
     `).join('');
 
+    const statusOptions = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
+    let selectStatusHTML = `
+      <select class="admin-select-status" onchange="alterarStatusWorkflow('${sol.uidWorkflow}', this.value)">
+        ${statusOptions.map(opt => `<option value="${opt}" ${sol.statusGlobal === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+      </select>
+    `;
+
+    let acoesHTML = '';
+    if (sol.statusGlobal !== 'Concluída' && sol.statusGlobal !== 'Cancelada') {
+      acoesHTML = `
+        <button class="mbtn" style="width:auto; padding:0 16px; height:30px; margin:0; background:var(--gn)" onclick="concluirWorkflowAdmin('${sol.uidWorkflow}')">
+          ✓ Concluir Destinação
+        </button>
+      `;
+    }
+
     return `
       <div class="sol-block">
         <div class="sol-block-header">
@@ -888,7 +1012,11 @@ function renderMóduloSolicitacoes() {
             <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow: ${sol.uidWorkflow}</div>
             <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${sol.solicitante}</b> | Recebido em: ${sol.timestamp}</div>
           </div>
-          <span class="sol-badge-status">${sol.statusGlobal}</span>
+          <div style="display:flex; align-items:center; gap:10px">
+            <span class="flbl" style="margin:0; font-size:11px">Alterar Status:</span>
+            ${selectStatusHTML}
+            ${acoesHTML}
+          </div>
         </div>
         <div style="overflow-x:auto">
           <table style="min-width:100%; font-size:11px;">
