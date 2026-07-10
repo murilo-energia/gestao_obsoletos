@@ -141,34 +141,30 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .tag-mid{color:var(--am);font-weight:600}
 .tag-ok{color:var(--gn);font-weight:600}
 
-/* ── COMPLEMENTOS: FLUXO DE GESTÃO E DESTINAÇÃO ── */
-.gestor-only, .admin-view-only { display: none; }
+/* ── EVOLUÇÃO DO WORKFLOW: CARRINHO E SOLICITAÇÕES ── */
+.gestor-only, .admin-view-only, .cart-counter { display: none; }
 .chk-col { width: 45px; text-align: center !important; }
 .chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
-#dest-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; animation: slideUp 0.25s ease; }
-@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.drawer { position: fixed; top: 0; right: -500px; width: 500px; height: 100vh; background: var(--wh); box-shadow: -10px 0 40px rgba(0,0,0,0.15); z-index: 600; transition: right 0.28s ease; display: flex; flex-direction: column; }
-.drawer.open { right: 0; }
-.dr-head { padding: 20px; border-bottom: 1px solid var(--g2); display: flex; align-items: center; justify-content: space-between; background: var(--g1); }
-.dr-body { padding: 20px; flex: 1; overflow-y: auto; }
-.dr-foot { padding: 16px 20px; border-top: 1px solid var(--g2); display: flex; gap: 10px; }
-.dr-item { border: 1px solid var(--g2); border-radius: var(--rs); padding: 12px; margin-bottom: 12px; background: var(--wh); position: relative; }
-.dr-item-del { position: absolute; top: 12px; right: 12px; color: var(--g4); cursor: pointer; font-size: 13px; }
-.dr-item-del:hover { color: var(--rd); }
-.dr-sel { width: 100%; height: 34px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 13px; padding: 0 6px; margin-top: 8px; outline: none; background: var(--g1); }
-.dr-sel:focus { border-color: var(--og); background: var(--wh); }
-.dr-tx { width: 100%; min-height: 50px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 6px 8px; margin-top: 6px; outline: none; resize: vertical; font-family: inherit; background: var(--g1); }
-.dr-tx:focus { border-color: var(--og); background: var(--wh); }
-.btn-sec { padding: 0 16px; height: 38px; border-radius: var(--rs); border: 1.5px solid var(--g2); background: #fff; font-size: 13px; font-weight: 500; cursor: pointer; }
-.btn-sec:hover { background: var(--g1); }
-.sol-card { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 16px; margin-bottom: 16px; }
-.sol-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 10px; margin-bottom: 10px; }
-.sol-badge { background: var(--ogp); color: var(--og); padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.cart-counter { background: var(--og); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9px; margin-left: auto; }
+#cart-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; animation: slideUp 0.2s ease; }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Inputs e Elementos internos das tabelas editáveis do carrinho */
+.cart-sel { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 0 4px; outline: none; background: var(--g1); }
+.cart-sel:focus { border-color: var(--og); background: #fff; }
+.cart-tx { width: 100%; height: 28px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 11px; padding: 0 6px; outline: none; background: var(--g1); }
+.cart-tx:focus { border-color: var(--og); background: #fff; }
+.btn-del { border: none; background: transparent; color: var(--rd); cursor: pointer; font-weight: 600; font-size: 11px; }
+.btn-del:hover { text-decoration: underline; }
+
+/* Blocos de Solicitações Recebidas */
+.sol-card { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.sol-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
+.sol-badge { background: var(--ogp); color: var(--og); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
 <div class="overlay" id="login-screen">
   <div class="mbox">
     <img class="mlogo" src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
@@ -189,7 +185,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   </div>
 </div>
 
-<!-- ══ LOADING ══ -->
 <div id="loading" style="display:none">
   <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
   <div class="spin"></div>
@@ -198,7 +193,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   <button class="lbtn" id="lbtn" onclick="loadData()">↺ Tentar novamente</button>
 </div>
 
-<!-- ══ SIDEBAR ══ -->
 <nav id="sb" style="display:none">
   <div class="sb-logo"><img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'"></div>
   <div class="sb-info">
@@ -209,7 +203,8 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="sbs">Navegação</div>
     <div class="ni on" data-pg="visao">📊 Visão Geral</div>
     <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
-    <div class="ni admin-view-only" data-pg="solicitacoes">📋 Solicitações</div>
+    <div class="ni gestor-only" data-pg="carrinho">🛒 Carrinho de Destinação <span class="cart-counter" id="cart-badge">0</span></div>
+    <div class="ni admin-view-only" data-pg="solicitacoes">📋 Solicitações Recebidas</div>
     <div class="sbs admin-only" style="margin-top:4px">Dados</div>
     <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
   </div>
@@ -220,7 +215,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   </div>
 </nav>
 
-<!-- ══ MAIN ══ -->
 <div id="main" style="display:none">
   <div id="topbar">
     <div class="tb-l">
@@ -234,7 +228,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
   </div>
 
-  <!-- ── VISÃO GERAL ── -->
   <div id="pg-visao" class="pg on">
     <div class="alert"><span style="font-size:19px;flex-shrink:0">⚡</span><span class="alert-t" id="atxt">Carregando...</span></div>
     <div class="kgrid">
@@ -254,7 +247,6 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
   </div>
 
-  <!-- ── ITENS OBSOLETOS ── -->
   <div id="pg-itens" class="pg">
     <div class="tw">
       <div class="th2">
@@ -281,44 +273,58 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
   </div>
 
-  <!-- ── SOLICITAÇÕES (ADMIN & EXCLUSIVO) ── -->
+  <div id="pg-carrinho" class="pg">
+    <div class="tw">
+      <div class="th2">
+        <div>
+          <div class="ctit">Itens Separados para Destinação</div>
+          <div class="csub">Revise as informações, altere os destinos e observações antes de submeter ao administrador</div>
+        </div>
+      </div>
+      <div style="max-height:500px;overflow-y:auto">
+        <table style="min-width:100%">
+          <thead>
+            <tr style="background:var(--dk2); color:#fff">
+              <th style="padding:9px 11px; font-size:10px">Código</th>
+              <th style="padding:9px 11px; font-size:10px">Produto</th>
+              <th style="padding:9px 11px; font-size:10px">Local</th>
+              <th style="padding:9px 11px; font-size:10px; text-align:center">Qtd</th>
+              <th style="padding:9px 11px; font-size:10px; text-align:right">Valor Total</th>
+              <th style="padding:9px 11px; font-size:10px; width:180px">Destino Escolhido</th>
+              <th style="padding:9px 11px; font-size:10px; width:220px">Observações</th>
+              <th style="padding:9px 11px; font-size:10px; text-align:center; width:60px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="cart-tbody"></tbody>
+        </table>
+      </div>
+      <div class="tfoot" style="padding:15px 17px; background:var(--g1); display:flex; justify-content:space-between; align-items:center;">
+        <div>Total de itens no carrinho: <b id="cart-total-qty">0</b></div>
+        <button class="mbtn" style="width:auto; padding:0 28px; margin:0; height:38px;" onclick="submitSolicitacao()">Solicitar Destino</button>
+      </div>
+    </div>
+  </div>
+
   <div id="pg-solicitacoes" class="pg">
     <div id="sol-container"></div>
   </div>
 </div>
 
-<!-- Barra Flutuante de Fluxo do Gestor -->
-<div id="dest-bar">
-  <div><b id="dest-count">0</b> item(ns) selecionado(s) para destinação</div>
-  <button class="mbtn" style="width:auto; padding:0 20px; height:36px; margin:0;" onclick="openDrawer()">Definir Destinos</button>
-</div>
-
-<!-- Gaveta Lateral de Revisão/Carrinho -->
-<div class="drawer" id="dr-dest">
-  <div class="dr-head">
-    <div>
-      <h3 style="font-size:15px; font-weight:600;">Destinação de Materiais</h3>
-      <p style="font-size:11px; color:var(--g4)">Especifique a decisão para os itens</p>
-    </div>
-    <span style="cursor:pointer; font-size:20px;" onclick="closeDrawer()">✕</span>
-  </div>
-  <div class="dr-body" id="dr-body-items"></div>
-  <div class="dr-foot">
-    <button class="btn-sec" style="flex:1" onclick="closeDrawer()">Voltar</button>
-    <button class="mbtn" style="flex:2; margin:0; height:38px" onclick="submitDestinacao()">Solicitar Destino</button>
-  </div>
+<div id="cart-bar">
+  <div><b id="cart-bar-count">0</b> item(ns) selecionado(s)</div>
+  <button class="mbtn" style="width:auto; padding:0 20px; height:34px; margin:0;" onclick="addAllToCart()">Adicionar ao Carrinho</button>
 </div>
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIGURAÇÃO
+//  CONFIGURAÇÃO DO SISTEMA EXTRAPOLADA
 // ══════════════════════════════════════════
 const PUB_ID = '2PACX-1vQwAZEpQOr0ps49gVqroHFhwCoDO5mqGPv1R1mkcR2l1yFwqrbue85syS68DqKQJhyshTz8oSBAH1YQ';
 const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv`;
 const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
 
-// Perfis de Acesso Atualizados
+// Perfis de Acesso Estendidos
 const AUTH_ADMIN_USER  = 'admin';
 const AUTH_ADMIN_PWD   = 'admin@energia';
 const AUTH_VIEW_USER   = 'viewer';
@@ -327,9 +333,9 @@ const AUTH_GEST_USER   = 'gestor';
 const AUTH_GEST_PWD    = 'gestor2026';
 
 let currentRole = null;
-let selectedItems = {}; // Estrutura temporária do carrinho de destinação
+let checkedItems = {};  // Estado temporário dos checkboxes na tabela de listagem
 
-// ── AUTHENTICATION ────────────────────────
+// ── AUTENTICAÇÃO E PERMISSÕES ────────────────────────
 function doLogin(){
   const user = document.getElementById('luser').value.trim();
   const pwd  = document.getElementById('lpwd').value;
@@ -369,13 +375,15 @@ function applyRole(){
   document.querySelectorAll('.gestor-only').forEach(el=>{
     el.style.display = isGestor ? '' : 'none';
   });
-
+  
   const badge = document.getElementById('role-badge');
   if(badge){
     if(isAdmin) { badge.textContent = '👑 Administrador'; badge.style.color = 'var(--og)'; }
     else if(isGestor) { badge.textContent = '💼 Gestor'; badge.style.color = 'var(--bl)'; }
     else { badge.textContent = '👤 Visualizador'; badge.style.color = 'var(--gn)'; }
   }
+  
+  updateCartBadge();
 }
 
 function eye(id, el){
@@ -388,13 +396,11 @@ document.getElementById('lpwd').addEventListener('keydown', e => { if(e.key==='E
 document.getElementById('luser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 function openSheet(){ 
-  if (currentRole === 'admin') {
-    window.open(SHEET_URL, '_blank'); 
-  }
+  if (currentRole === 'admin') { window.open(SHEET_URL, '_blank'); }
 }
 
 // ══════════════════════════════════════════
-//  DADOS
+//  GERENCIAMENTO DA PLANILHA E PROXIES
 // ══════════════════════════════════════════
 let RAW=[], FILT=[], SALDO={}, sk='valorTotal', sd=-1;
 
@@ -431,7 +437,7 @@ async function fetchCSV(baseUrl, label){
       throw new Error('Resposta vazia');
     } catch(e){ console.warn('Proxy '+(i+1)+' falhou ('+label+'):',e.message); }
   }
-  throw new Error('Não foi possível carregar '+label+'. Verifique se a aba está publicada e o gid está correto.');
+  throw new Error('Não foi possível carregar '+label+'.');
 }
 
 function pLine(line){
@@ -537,7 +543,7 @@ function grp(arr, key){
 }
 const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
 
-// ── LOAD ──────────────────────────────────
+// ── LOADING DATA ──────────────────────────
 async function loadData(manual=false){
   const btn = document.getElementById('bsync');
   if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
@@ -550,7 +556,7 @@ async function loadData(manual=false){
       fetchCSV(URL_SALDO, 'Saldo de Estoque')
     ]);
     const data = parseObsoletos(csvObs);
-    if(!data.length) throw new Error('Nenhum dado válido em Estoque Obsoletos.');
+    if(!data.length) throw new Error('Nenhum dado em Estoque Obsoletos.');
     SALDO = parseSaldo(csvSaldo);
 
     RAW = data; FILT = [...RAW];
@@ -570,24 +576,23 @@ async function loadData(manual=false){
     renderPg(pg ? pg.dataset.pg : 'visao');
 
   } catch(e){
-    console.error('Erro:', e);
+    console.error(e);
     document.getElementById('ltxt').textContent = 'Erro ao carregar';
     document.getElementById('lerr2').innerHTML = '<b>Falha na conexão</b><br>'+e.message;
     document.getElementById('lerr2').style.display = 'block';
     document.getElementById('lbtn').style.display = 'block';
     if(sdot) sdot.classList.add('dot-err');
-    const updt = document.getElementById('upd-t'); if(updt) updt.textContent = 'Falha na última sync';
     if(btn) btn.classList.remove('syncing');
-    if(manual) alert('❌ Erro ao sincronizar:\n'+e.message);
   }
 }
 
-// ── NAV ───────────────────────────────────
+// ── NAVEGAÇÃO ENTRE ABAS ───────────────────
 let uiOn = false;
 function initUI(){
   if(uiOn) return; uiOn = true;
-  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',solicitacoes:'Solicitações de Destinação'};
-  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos',solicitacoes:'Histórico de fluxos e destinações solicitadas pelos Gestores'};
+  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',carrinho:'Carrinho de Destinação',solicitacoes:'Solicitações Recebidas'};
+  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos',carrinho:'Gerencie e revise os itens selecionados antes de disparar a destinação',solicitacoes:'Histórico de fluxos e destinações homologadas e enviadas pelos Gestores'};
+  
   document.querySelectorAll('.ni[data-pg]').forEach(n=>{
     n.onclick = function(){
       document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
@@ -598,9 +603,8 @@ function initUI(){
       document.getElementById('ttl').textContent = titles[id];
       document.getElementById('tsub').textContent = subs[id];
       
-      // Ocultar barra flutuante caso saia de itens
-      if (id !== 'itens') { document.getElementById('dest-bar').style.display = 'none'; }
-      else { updateDestinacaoBar(); }
+      if (id !== 'itens') { document.getElementById('cart-bar').style.display = 'none'; }
+      else { updateCartBar(); }
       
       applyF();
     };
@@ -624,90 +628,69 @@ function initFilters(){
     .forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
 }
 
-// ── RENDER ────────────────────────────────
-const CO = {responsive:true, maintainAspectRatio:false};
-const GRD = {color:'rgba(0,0,0,0.05)'};
-
+// ── RENDERIZAÇÃO DE TELAS ─────────────────
 function renderPg(id){
   const tot = FILT.reduce((s,r)=>s+r.valorTotal,0);
   const saldoTotalGeral = Object.values(SALDO).reduce((s,v)=>s+v,0);
 
   if(id==='visao'){
     const lg = grp(FILT,'local'); const lk = skeys(lg);
-
-    const pctPorLocal = lk.map(k=>({
-      local:k, valorObs:lg[k].valorTotal, saldo:SALDO[k]||0,
-      pct: SALDO[k] ? (lg[k].valorTotal/SALDO[k]*100) : null
-    }));
+    const pctPorLocal = lk.map(k=>({local:k, valorObs:lg[k].valorTotal, saldo:SALDO[k]||0, pct: SALDO[k]?(lg[k].valorTotal/SALDO[k]*100):null}));
     const critico = [...pctPorLocal].filter(x=>x.pct!=null).sort((a,b)=>b.pct-a.pct)[0];
-
     const pctGeral = saldoTotalGeral>0 ? tot/saldoTotalGeral*100 : null;
 
     document.getElementById('k1').textContent = fBRL(tot);
     document.getElementById('k1s').textContent = FILT.length+' itens obsoletos';
     document.getElementById('k2').textContent = pctGeral!=null ? pctGeral.toFixed(2)+'%' : '—';
-    document.getElementById('k2s').textContent = saldoTotalGeral>0 ? 'de '+fBRL(saldoTotalGeral)+' em saldo' : 'saldo não carregado';
+    document.getElementById('k2s').textContent = saldoTotalGeral>0 ? 'de '+fBRL(saldoTotalGeral)+' em saldo' : '—';
     document.getElementById('k3').textContent = critico ? critico.local : (lk[0]||'—');
-    document.getElementById('k3s').textContent = critico ? critico.pct.toFixed(1)+'% do saldo local é obsoleto' : (lk[0]?fBRL(lg[lk[0]].valorTotal):'—');
+    document.getElementById('k3s').textContent = critico ? critico.pct.toFixed(1)+'% do saldo' : '—';
 
     const maisAntigo = [...FILT].filter(r=>r.diasParado>=0).sort((a,b)=>b.diasParado-a.diasParado)[0];
     document.getElementById('k4').textContent = maisAntigo ? maisAntigo.diasParado+' dias' : '—';
     document.getElementById('k4s').textContent = maisAntigo ? maisAntigo.produto.slice(0,28) : '—';
 
-    document.getElementById('atxt').innerHTML =
-      'Estoque obsoleto consolidado — <b>'+fBRL(tot)+'</b> em <b>'+FILT.length+' itens</b>'+
-      (pctGeral!=null ? ', representando <b>'+pctGeral.toFixed(2)+'%</b> do saldo total de estoque.' : '.');
+    document.getElementById('atxt').innerHTML = 'Estoque obsoleto consolidado — <b>'+fBRL(tot)+'</b> em <b>'+FILT.length+' itens</b>';
 
     dch('c1'); CH['c1']=new Chart(document.getElementById('c1'),{type:'bar',
-      data:{labels:lk,datasets:[{label:'Obsoleto',data:lk.map(k=>lg[k].valorTotal),backgroundColor:lk.map((_,i)=>CL[i%CL.length]),borderRadius:5,borderSkipped:false}]},
-      options:{...CO,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fBRL(c.raw)}}},
-        scales:{x:{ticks:{font:{size:10},maxRotation:20},grid:{display:false}},y:{ticks:{callback:fAX,font:{size:10}},grid:GRD}}}});
+      data:{labels:lk,datasets:[{label:'Obsoleto',data:lk.map(k=>lg[k].valorTotal),backgroundColor:lk.map((_,i)=>CL[i%CL.length]),borderRadius:5}]},
+      options:{...CO,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fBRL(c.raw)}}},scales:{y:{ticks:{callback:fAX}}}}});
 
     const pctOrdered = [...pctPorLocal].sort((a,b)=>(b.pct||0)-(a.pct||0));
     dch('c2'); CH['c2']=new Chart(document.getElementById('c2'),{type:'bar',
-      data:{labels:pctOrdered.map(x=>x.local),datasets:[{label:'% Obsoleto',data:pctOrdered.map(x=>x.pct||0),backgroundColor:pctOrdered.map((_,i)=>CL[i%CL.length]),borderRadius:5,borderSkipped:false}]},
-      options:{...CO,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.toFixed(2)+'% do saldo local'}}},
-        scales:{x:{ticks:{callback:v=>v+'%',font:{size:10}},grid:GRD},y:{ticks:{font:{size:11}},grid:{display:false}}}}});
+      data:{labels:pctOrdered.map(x=>x.local),datasets:[{label:'% Obsoleto',data:pctOrdered.map(x=>x.pct||0),backgroundColor:pctOrdered.map((_,i)=>CL[i%CL.length]),borderRadius:5}]},
+      options:{...CO,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%'}}}}});
 
-    let h='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>';
-    ['Local','Itens','Valor Obsoleto','Saldo Total do Local','% Representa'].forEach(col=>
-      h+='<th style="background:#2D2D2D;color:#fff;padding:8px 11px;font-size:10px;text-transform:uppercase;text-align:left">'+col+'</th>');
-    h+='</tr></thead><tbody>';
+    let h='<table style="width:100%"><thead><tr><th>Local</th><th>Itens</th><th>Valor Obsoleto</th><th>Saldo Total</th><th>% Representa</th></tr></thead><tbody>';
     pctOrdered.forEach((x,i)=>{
-      const pctTxt = x.pct!=null ? x.pct.toFixed(1)+'%' : 'sem saldo cadastrado';
-      const cls = x.pct==null ? '' : x.pct>15 ? 'tag-old' : x.pct>5 ? 'tag-mid' : 'tag-ok';
-      h+='<tr style="background:'+(i%2?'#fff':'#FAFAFA')+';border-bottom:1px solid #eee">'
-        +'<td style="padding:8px 11px;font-weight:600">'+x.local+'</td>'
-        +'<td style="padding:8px 11px;text-align:center;color:#888">'+lg[x.local].n+'</td>'
-        +'<td style="padding:8px 11px;text-align:right;font-variant-numeric:tabular-nums">'+fBRL(x.valorObs)+'</td>'
-        +'<td style="padding:8px 11px;text-align:right;font-variant-numeric:tabular-nums;color:#888">'+(x.saldo?fBRL(x.saldo):'—')+'</td>'
-        +'<td style="padding:8px 11px;text-align:right" class="'+cls+'">'+pctTxt+'</td>'
-        +'</tr>';
+      h+=`<tr style="background:${i%2?'#fff':'#FAFAFA'}"><td><b>${x.local}</b></td><td>${lg[x.local].n}</td><td class="nm">${fBRL(x.valorObs)}</td><td class="nm">${x.saldo?fBRL(x.saldo):'—'}</td><td class="${x.pct>15?'tag-old':x.pct>5?'tag-mid':'tag-ok'}">${x.pct?x.pct.toFixed(1)+'%':'—'}</td></tr>`;
     });
     document.getElementById('tb-loc').innerHTML=h+'</tbody></table>';
   }
 
   if(id==='itens') renderTbl(FILT);
+  if(id==='carrinho') renderCarrinho();
   if(id==='solicitacoes') renderSolicitacoes();
 }
 
-// ── TABELA ────────────────────────────────
+// ── TABELA DE ITENS ───────────────────────
 function renderTbl(data){
-  const sorted = [...data].sort((a,b)=>{
-    const av=a[sk], bv=b[sk];
-    return (typeof av==='number' ? av-bv : String(av).localeCompare(String(bv))) * sd;
-  });
+  const sorted = [...data].sort((a,b)=>{ const av=a[sk], bv=b[sk]; return (typeof av==='number'?av-bv:String(av).localeCompare(String(bv)))*sd; });
   document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
   document.getElementById('tfl').textContent = sorted.length+' itens';
   
   const isGestor = currentRole === 'gestor';
-  
+  const cart = getCart();
+
   document.getElementById('tbody').innerHTML = sorted.map(r=>{
     const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
-    const isChecked = selectedItems[r.id] ? 'checked' : '';
+    
+    // Se o item já estiver no carrinho, ele não pode ser selecionado novamente (ou fica travado)
+    const inCart = cart[r.id] ? 'disabled title="Já está no carrinho"' : '';
+    const isChecked = checkedItems[r.id] ? 'checked' : '';
     
     return '<tr>'
-      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box chk-item" data-id="${r.id}" ${isChecked} onchange="handleSelect(this)"></td>` : '')
+      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box chk-item" data-id="${r.id}" ${isChecked} ${inCart} onchange="handleSelect(this)"></td>` : '')
       +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
       +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
       +'<td><span class="bdg">'+r.local+'</span></td>'
@@ -719,147 +702,176 @@ function renderTbl(data){
       +'</tr>';
   }).join('');
   updH();
-  if(isGestor) updateDestinacaoBar();
+  if(isGestor) updateCartBar();
 }
 
 function ftbl(q){
   const lq=q.toLowerCase();
-  renderTbl(FILT.filter(r=>
-    r.produto.toLowerCase().includes(lq)||r.codigo.toLowerCase().includes(lq)||r.local.toLowerCase().includes(lq)));
+  renderTbl(FILT.filter(r=>r.produto.toLowerCase().includes(lq)||r.codigo.toLowerCase().includes(lq)||r.local.toLowerCase().includes(lq)));
 }
 function srt(key){ if(sk===key) sd*=-1; else{sk=key;sd=-1;} ftbl(document.getElementById('tsrch').value); }
 function updH(){
-  const km={codigo:1,produto:2,local:3,valorUnit:4,qtd:5,valorTotal:6,ultimaSaida:7,diasParado:8};
   document.querySelectorAll('#pg-itens thead th').forEach(t=>t.classList.remove('sa','sd'));
-  const idx=km[sk]; if(idx!=null){ const t=document.querySelectorAll('#pg-itens thead th')[currentRole==='gestor'?idx:idx-1]; if(t)t.classList.add(sd===1?'sa':'sd'); }
 }
 
 // ══════════════════════════════════════════
-//  LÓGICA FLUXO DE GESTÃO E DESTINAÇÃO (NOVO)
+//  LÓGICA DO CARRINHO DE DESTINAÇÃO (WORKFLOW)
 // ══════════════════════════════════════════
-function handleSelect(el) {
-  const id = el.dataset.id;
-  if (el.checked) {
-    const item = RAW.find(r => r.id === id);
-    if (item && !selectedItems[id]) {
-      selectedItems[id] = { ...item, destino: 'Aguardando Avaliação', outroTexto: '', obsGeral: '' };
-    }
-  } else {
-    delete selectedItems[id];
+function getCart() { return JSON.parse(localStorage.getItem('energia_carrinho') || '{}'); }
+function saveCart(cart) { localStorage.setItem('energia_carrinho', JSON.stringify(cart)); updateCartBadge(); }
+
+function updateCartBadge() {
+  const cart = getCart();
+  const size = Object.keys(cart).length;
+  const badge = document.getElementById('cart-badge');
+  if(badge) {
+    badge.textContent = size;
+    badge.style.display = size > 0 ? 'inline-block' : 'none';
   }
-  updateDestinacaoBar();
+}
+
+function handleSelect(el) {
+  if (el.checked) { checkedItems[el.dataset.id] = true; } 
+  else { delete checkedItems[el.dataset.id]; }
+  updateCartBar();
 }
 
 function toggleSelectAll(el) {
-  document.querySelectorAll('.chk-item').forEach(chk => {
+  document.querySelectorAll('.chk-item:not([disabled])').forEach(chk => {
     chk.checked = el.checked;
     handleSelect(chk);
   });
 }
 
-function updateDestinacaoBar() {
-  const count = Object.keys(selectedItems).length;
-  const bar = document.getElementById('dest-bar');
+function updateCartBar() {
+  const count = Object.keys(checkedItems).length;
+  const bar = document.getElementById('cart-bar');
   if (currentRole === 'gestor' && count > 0 && document.getElementById('pg-itens').classList.contains('on')) {
-    document.getElementById('dest-count').textContent = count;
+    document.getElementById('cart-bar-count').textContent = count;
     bar.style.display = 'flex';
   } else {
     bar.style.display = 'none';
   }
 }
 
-function openDrawer() {
-  const body = document.getElementById('dr-body-items');
-  body.innerHTML = '';
-  
-  Object.keys(selectedItems).forEach(id => {
-    const item = selectedItems[id];
-    const div = document.createElement('div');
-    div.className = 'dr-item';
-    div.id = `dr-node-${id}`;
-    div.innerHTML = `
-      <span class="dr-item-del" onclick="removeDrawerItem('${id}')">✕ Remover</span>
-      <div style="font-size:12px; font-weight:600; color:var(--dk); max-width:85%">${item.produto}</div>
-      <div style="font-size:11px; color:var(--g4); margin-top:2px">Cód: ${item.codigo} | Qtd: ${item.qtd} | Local: ${item.local}</div>
-      
-      <select class="dr-sel" onchange="handleDestonChange('${id}', this.value)">
-        <option value="Aguardando Avaliação" ${item.destino==='Aguardando Avaliação'?'selected':''}>Aguardando Avaliação</option>
-        <option value="Venda" ${item.destino==='Venda'?'selected':''}>Venda</option>
-        <option value="Doação" ${item.destino==='Doação'?'selected':''}>Doação</option>
-        <option value="Transferência" ${item.destino==='Transferência'?'selected':''}>Transferência</option>
-        <option value="Reaproveitamento Interno" ${item.destino==='Reaproveitamento Interno'?'selected':''}>Reaproveitamento Interno</option>
-        <option value="Recuperação / Reforma" ${item.destino==='Recuperação / Reforma'?'selected':''}>Recuperação / Reforma</option>
-        <option value="Sucata" ${item.destino==='Sucata'?'selected':''}>Sucata</option>
-        <option value="Descarte" ${item.destino==='Descarte'?'selected':''}>Descarte</option>
-        <option value="Outro" ${item.destino==='Outro'?'selected':''}>Outro</option>
-      </select>
-      
-      <input type="text" class="dr-tx" id="out-${id}" placeholder="Descreva o outro destino..." style="display:${item.destino==='Outro'?'block':'none'}" value="${item.outroTexto||''}" oninput="selectedItems['${id}'].outroTexto=this.value">
-      <textarea class="dr-tx" placeholder="Observações adicionais gerais para este item..." oninput="selectedItems['${id}'].obsGeral=this.value">${item.obsGeral||''}</textarea>
-    `;
-    body.appendChild(div);
+function addAllToCart() {
+  const cart = getCart();
+  Object.keys(checkedItems).forEach(id => {
+    const item = RAW.find(r => r.id === id);
+    if (item && !cart[id]) {
+      cart[id] = {
+        ...item,
+        destino: 'Aguardando Avaliação',
+        obsGeral: ''
+      };
+    }
   });
-  
-  document.getElementById('dr-dest').classList.add('open');
-}
-
-function closeDrawer() {
-  document.getElementById('dr-dest').classList.remove('open');
-}
-
-function removeDrawerItem(id) {
-  delete selectedItems[id];
-  const node = document.getElementById(`dr-node-${id}`);
-  if(node) node.remove();
-  
-  // Desmarca na tabela se estiver visível
-  const chk = document.querySelector(`.chk-item[data-id="${id}"]`);
-  if(chk) chk.checked = false;
-  
-  updateDestinacaoBar();
-  if(Object.keys(selectedItems).length === 0) closeDrawer();
-}
-
-function handleDestonChange(id, value) {
-  selectedItems[id].destino = value;
-  const outField = document.getElementById(`out-${id}`);
-  if(outField) outField.style.display = value === 'Outro' ? 'block' : 'none';
-}
-
-function submitDestinacao() {
-  const itemsArray = Object.values(selectedItems);
-  if(itemsArray.length === 0) return;
-  
-  // Criação do bloco de solicitação estruturado
-  const novaSolicitacao = {
-    id: 'SOL-' + Date.now(),
-    gestor: AUTH_GEST_USER,
-    data: new Date().toLocaleString('pt-BR'),
-    status: 'Enviado',
-    itensCount: itemsArray.length,
-    itens: itemsArray.map(i => ({
-      codigo: i.codigo,
-      produto: i.produto,
-      local: i.local,
-      qtd: i.qtd,
-      valorTotal: i.valorTotal,
-      destino: i.destino === 'Outro' ? `Outro (${i.outroTexto || 'Não especificado'})` : i.destino,
-      obs: i.obsGeral || '—'
-    }))
-  };
-  
-  // Salva no localStorage para simular envio e persistência ao Admin
-  let existentes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
-  existentes.unshift(novaSolicitacao);
-  localStorage.setItem('energia_solicitacoes', JSON.stringify(existentes));
-  
-  alert('🚀 Solicitação de Destinação enviada com sucesso ao Administrador!');
-  
-  // Limpa o carrinho/seleção atual
-  selectedItems = {};
+  saveCart(cart);
+  checkedItems = {};
   document.getElementById('chk-all').checked = false;
-  closeDrawer();
+  alert('🛒 Itens adicionados com sucesso ao seu menu Carrinho!');
   applyF();
+}
+
+function renderCarrinho() {
+  const cart = getCart();
+  const tbody = document.getElementById('cart-tbody');
+  const keys = Object.keys(cart);
+  
+  if (keys.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--g4)">Seu carrinho está vazio. Vá até a aba "Itens Obsoletos" e separe materiais.</td></tr>`;
+    document.getElementById('cart-total-qty').textContent = 0;
+    return;
+  }
+  
+  document.getElementById('cart-total-qty').textContent = keys.length;
+  
+  tbody.innerHTML = keys.map(id => {
+    const item = cart[id];
+    return `
+      <tr id="cart-row-${id}">
+        <td style="color:#888; font-size:11px">${item.codigo}</td>
+        <td><b>${item.produto}</b></td>
+        <td><span class="bdg">${item.local}</span></td>
+        <td style="text-align:center">${item.qtd}</td>
+        <td class="nm">${fBRL(item.valorTotal)}</td>
+        <td>
+          <select class="cart-sel" onchange="updateCartItemField('${id}', 'destino', this.value)">
+            <option value="Aguardando Avaliação" ${item.destino==='Aguardando Avaliação'?'selected':''}>Aguardando Avaliação</option>
+            <option value="Venda" ${item.destino==='Venda'?'selected':''}>Venda</option>
+            <option value="Doação" ${item.destino==='Doação'?'selected':''}>Doação</option>
+            <option value="Transferência" ${item.destino==='Transferência'?'selected':''}>Transferência</option>
+            <option value="Reaproveitamento Interno" ${item.destino==='Reaproveitamento Interno'?'selected':''}>Reaproveitamento Interno</option>
+            <option value="Recuperação / Reforma" ${item.destino==='Recuperação / Reforma'?'selected':''}>Recuperação / Reforma</option>
+            <option value="Sucata" ${item.destino==='Sucata'?'selected':''}>Sucata</option>
+            <option value="Descarte" ${item.destino==='Descarte'?'selected':''}>Descarte</option>
+          </select>
+        </td>
+        <td>
+          <input type="text" class="cart-tx" placeholder="Nota/Motivo..." value="${item.obsGeral || ''}" oninput="updateCartItemField('${id}', 'obsGeral', this.value)">
+        </td>
+        <td style="text-align:center">
+          <button class="btn-del" onclick="removeCartItem('${id}')">Remover</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateCartItemField(id, field, value) {
+  const cart = getCart();
+  if (cart[id]) {
+    cart[id][field] = value;
+    localStorage.setItem('energia_carrinho', JSON.stringify(cart));
+  }
+}
+
+function removeCartItem(id) {
+  const cart = getCart();
+  delete cart[id];
+  saveCart(cart);
+  renderCarrinho();
+}
+
+function submitSolicitacao() {
+  const cart = getCart();
+  const itemsArray = Object.values(cart);
+  
+  if (itemsArray.length === 0) {
+    alert('❌ O carrinho está vazio!');
+    return;
+  }
+  
+  if (confirm(`Confirma o envio desta solicitação contendo ${itemsArray.length} item(ns) para o Administrador?`)) {
+    const novaSolicitacao = {
+      id: 'SOL-' + Date.now(),
+      gestor: AUTH_GEST_USER,
+      data: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+      status: 'Pendente Análise',
+      itensCount: itemsArray.length,
+      itens: itemsArray.map(i => ({
+        codigo: i.codigo,
+        produto: i.produto,
+        local: i.local,
+        qtd: i.qtd,
+        valorTotal: i.valorTotal,
+        destino: i.destino,
+        obs: i.obsGeral || '—'
+      }))
+    };
+    
+    // Armazena na fila de solicitações finais
+    let solicitacoes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
+    solicitacoes.unshift(novaSolicitacao);
+    localStorage.setItem('energia_solicitacoes', JSON.stringify(solicitacoes));
+    
+    // Limpa o carrinho permanentemente
+    localStorage.removeItem('energia_carrinho');
+    updateCartBadge();
+    
+    alert('🚀 Workflow concluído! Solicitação gravada com sucesso e enviada ao Administrador.');
+    renderCarrinho();
+  }
 }
 
 function renderSolicitacoes() {
@@ -868,9 +880,9 @@ function renderSolicitacoes() {
   
   if (solicitacoes.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:40px; color:var(--g4)">
-        <span style="font-size:40px">📂</span>
-        <p style="margin-top:10px; font-size:13px">Nenhuma solicitação de destinação foi enviada até o momento.</p>
+      <div style="text-align:center; padding:50px; color:var(--g4)">
+        <span style="font-size:42px">📋</span>
+        <p style="margin-top:12px; font-size:13px">Nenhuma solicitação de destinação foi transmitida até o momento.</p>
       </div>
     `;
     return;
@@ -879,13 +891,13 @@ function renderSolicitacoes() {
   container.innerHTML = solicitacoes.map(sol => {
     let rowsHtml = sol.itens.map(i => `
       <tr style="border-bottom:1px solid var(--g1)">
-        <td style="padding:6px 8px; color:var(--g5)">${i.codigo}</td>
-        <td style="padding:6px 8px; font-weight:500">${i.produto}</td>
-        <td style="padding:6px 8px;"><span class="bdg">${i.local}</span></td>
-        <td style="padding:6px 8px; text-align:center">${i.qtd}</td>
-        <td style="padding:6px 8px; text-align:right">${fBRL(i.valorTotal)}</td>
-        <td style="padding:6px 8px; font-weight:600; color:var(--bl)">${i.destino}</td>
-        <td style="padding:6px 8px; color:var(--g4); font-size:11px">${i.obs}</td>
+        <td style="padding:7px 9px; color:var(--g5)">${i.codigo}</td>
+        <td style="padding:7px 9px; font-weight:500">${i.produto}</td>
+        <td style="padding:7px 9px;"><span class="bdg">${i.local}</span></td>
+        <td style="padding:7px 9px; text-align:center">${i.qtd}</td>
+        <td style="padding:7px 9px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(i.valorTotal)}</td>
+        <td style="padding:7px 9px; font-weight:600; color:var(--bl)">${i.destino}</td>
+        <td style="padding:7px 9px; color:var(--g4); font-size:11px">${i.obs}</td>
       </tr>
     `).join('');
 
@@ -893,22 +905,22 @@ function renderSolicitacoes() {
       <div class="sol-card">
         <div class="sol-head">
           <div>
-            <div style="font-size:14px; font-weight:700; color:var(--dk)">Solicitação: ${sol.id}</div>
-            <div style="font-size:11px; color:var(--g4); margin-top:2px">Enviado por: <b>${sol.gestor}</b> | Data: ${sol.data}</div>
+            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${sol.id}</div>
+            <div style="font-size:11px; color:var(--g4); margin-top:2px">Gestor Solicitante: <b>${sol.gestor}</b> | Data/Hora: ${sol.data}</div>
           </div>
           <span class="sol-badge">${sol.status}</span>
         </div>
         <div style="overflow-x:auto">
-          <table style="min-width:100%; font-size:11px; margin-top:8px">
+          <table style="min-width:100%; font-size:11px; margin-top:6px">
             <thead>
               <tr style="background:var(--g1); color:var(--dk)">
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Código</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Produto</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Local</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px; text-align:center">Qtd</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px; text-align:right">Valor Total</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Destino Proposto</th>
-                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Observação</th>
+                <th style="padding:6px 8px; color:var(--dk)">Código</th>
+                <th style="padding:6px 8px; color:var(--dk)">Produto</th>
+                <th style="padding:6px 8px; color:var(--dk)">Local</th>
+                <th style="padding:6px 8px; color:var(--dk); text-align:center">Qtd</th>
+                <th style="padding:6px 8px; color:var(--dk); text-align:right">Valor Total</th>
+                <th style="padding:6px 8px; color:var(--dk)">Destino Escolhido</th>
+                <th style="padding:6px 8px; color:var(--dk)">Observação</th>
               </tr>
             </thead>
             <tbody>
@@ -916,8 +928,8 @@ function renderSolicitacoes() {
             </tbody>
           </table>
         </div>
-        <div style="text-align:right; font-size:11px; color:var(--g5); margin-top:10px; font-weight:600">
-          Total de Itens: ${sol.itensCount}
+        <div style="text-align:right; font-size:11px; color:var(--g5); margin-top:12px; font-weight:600">
+          Quantidade Total de Itens: ${sol.itensCount}
         </div>
       </div>
     `;
