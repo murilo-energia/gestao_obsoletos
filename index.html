@@ -140,10 +140,35 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .tag-old{color:var(--rd);font-weight:700}
 .tag-mid{color:var(--am);font-weight:600}
 .tag-ok{color:var(--gn);font-weight:600}
+
+/* ── COMPLEMENTOS: FLUXO DE GESTÃO E DESTINAÇÃO ── */
+.gestor-only, .admin-view-only { display: none; }
+.chk-col { width: 45px; text-align: center !important; }
+.chk-box { width: 16px; height: 16px; accent-color: var(--og); cursor: pointer; }
+#dest-bar { position: fixed; bottom: 20px; left: calc(var(--sw) + 22px); right: 22px; background: var(--dk2); color: #fff; border-radius: var(--rad); padding: 14px 24px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 400; animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.drawer { position: fixed; top: 0; right: -500px; width: 500px; height: 100vh; background: var(--wh); box-shadow: -10px 0 40px rgba(0,0,0,0.15); z-index: 600; transition: right 0.28s ease; display: flex; flex-direction: column; }
+.drawer.open { right: 0; }
+.dr-head { padding: 20px; border-bottom: 1px solid var(--g2); display: flex; align-items: center; justify-content: space-between; background: var(--g1); }
+.dr-body { padding: 20px; flex: 1; overflow-y: auto; }
+.dr-foot { padding: 16px 20px; border-top: 1px solid var(--g2); display: flex; gap: 10px; }
+.dr-item { border: 1px solid var(--g2); border-radius: var(--rs); padding: 12px; margin-bottom: 12px; background: var(--wh); position: relative; }
+.dr-item-del { position: absolute; top: 12px; right: 12px; color: var(--g4); cursor: pointer; font-size: 13px; }
+.dr-item-del:hover { color: var(--rd); }
+.dr-sel { width: 100%; height: 34px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 13px; padding: 0 6px; margin-top: 8px; outline: none; background: var(--g1); }
+.dr-sel:focus { border-color: var(--og); background: var(--wh); }
+.dr-tx { width: 100%; min-height: 50px; border: 1.5px solid var(--g2); border-radius: var(--rs); font-size: 12px; padding: 6px 8px; margin-top: 6px; outline: none; resize: vertical; font-family: inherit; background: var(--g1); }
+.dr-tx:focus { border-color: var(--og); background: var(--wh); }
+.btn-sec { padding: 0 16px; height: 38px; border-radius: var(--rs); border: 1.5px solid var(--g2); background: #fff; font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn-sec:hover { background: var(--g1); }
+.sol-card { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 16px; margin-bottom: 16px; }
+.sol-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 10px; margin-bottom: 10px; }
+.sol-badge { background: var(--ogp); color: var(--og); padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
 </style>
 </head>
 <body>
 
+<!-- ══ LOGIN ══ -->
 <div class="overlay" id="login-screen">
   <div class="mbox">
     <img class="mlogo" src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
@@ -164,6 +189,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   </div>
 </div>
 
+<!-- ══ LOADING ══ -->
 <div id="loading" style="display:none">
   <img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'">
   <div class="spin"></div>
@@ -172,6 +198,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   <button class="lbtn" id="lbtn" onclick="loadData()">↺ Tentar novamente</button>
 </div>
 
+<!-- ══ SIDEBAR ══ -->
 <nav id="sb" style="display:none">
   <div class="sb-logo"><img src="./logo.png" alt="Grupo Energia" onerror="this.style.display='none'"></div>
   <div class="sb-info">
@@ -182,6 +209,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     <div class="sbs">Navegação</div>
     <div class="ni on" data-pg="visao">📊 Visão Geral</div>
     <div class="ni" data-pg="itens">📦 Itens Obsoletos</div>
+    <div class="ni admin-view-only" data-pg="solicitacoes">📋 Solicitações</div>
     <div class="sbs admin-only" style="margin-top:4px">Dados</div>
     <div class="ni admin-only" onclick="openSheet()" style="color:#2EA86B">📝 Atualizar Planilha</div>
   </div>
@@ -192,6 +220,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   </div>
 </nav>
 
+<!-- ══ MAIN ══ -->
 <div id="main" style="display:none">
   <div id="topbar">
     <div class="tb-l">
@@ -205,6 +234,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
   </div>
 
+  <!-- ── VISÃO GERAL ── -->
   <div id="pg-visao" class="pg on">
     <div class="alert"><span style="font-size:19px;flex-shrink:0">⚡</span><span class="alert-t" id="atxt">Carregando...</span></div>
     <div class="kgrid">
@@ -224,6 +254,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
     </div>
   </div>
 
+  <!-- ── ITENS OBSOLETOS ── -->
   <div id="pg-itens" class="pg">
     <div class="tw">
       <div class="th2">
@@ -233,6 +264,7 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
       <div style="max-height:560px;overflow-y:auto">
         <table>
           <thead><tr>
+            <th class="chk-col gestor-only"><input type="checkbox" class="chk-box" id="chk-all" onchange="toggleSelectAll(this)"></th>
             <th onclick="srt('codigo')">Código</th>
             <th onclick="srt('produto')">Produto</th>
             <th onclick="srt('local')">Local</th>
@@ -248,6 +280,33 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
       <div class="tfoot"><span id="tfl">—</span><b>Grupo Energia — Estoque Obsoletos</b></div>
     </div>
   </div>
+
+  <!-- ── SOLICITAÇÕES (ADMIN & EXCLUSIVO) ── -->
+  <div id="pg-solicitacoes" class="pg">
+    <div id="sol-container"></div>
+  </div>
+</div>
+
+<!-- Barra Flutuante de Fluxo do Gestor -->
+<div id="dest-bar">
+  <div><b id="dest-count">0</b> item(ns) selecionado(s) para destinação</div>
+  <button class="mbtn" style="width:auto; padding:0 20px; height:36px; margin:0;" onclick="openDrawer()">Definir Destinos</button>
+</div>
+
+<!-- Gaveta Lateral de Revisão/Carrinho -->
+<div class="drawer" id="dr-dest">
+  <div class="dr-head">
+    <div>
+      <h3 style="font-size:15px; font-weight:600;">Destinação de Materiais</h3>
+      <p style="font-size:11px; color:var(--g4)">Especifique a decisão para os itens</p>
+    </div>
+    <span style="cursor:pointer; font-size:20px;" onclick="closeDrawer()">✕</span>
+  </div>
+  <div class="dr-body" id="dr-body-items"></div>
+  <div class="dr-foot">
+    <button class="btn-sec" style="flex:1" onclick="closeDrawer()">Voltar</button>
+    <button class="mbtn" style="flex:2; margin:0; height:38px" onclick="submitDestinacao()">Solicitar Destino</button>
+  </div>
 </div>
 
 <script>
@@ -259,13 +318,16 @@ const URL_OBSOLETOS = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gi
 const URL_SALDO = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=659791359&single=true&output=csv`;
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1cay8fajg74Z3At4to_geiVxuhhD1dNrw4fEMAi97jpI/edit';
 
-// Credenciais fixas de autenticação
-const AUTH_ADMIN_USER = 'admin';
-const AUTH_ADMIN_PWD  = 'admin@energia';
-const AUTH_VIEW_USER  = 'viewer';
-const AUTH_VIEW_PWD   = 'energia2025';
+// Perfis de Acesso Atualizados
+const AUTH_ADMIN_USER  = 'admin';
+const AUTH_ADMIN_PWD   = 'admin@energia';
+const AUTH_VIEW_USER   = 'viewer';
+const AUTH_VIEW_PWD    = 'energia2025';
+const AUTH_GEST_USER   = 'gestor';
+const AUTH_GEST_PWD    = 'gestor2026';
 
 let currentRole = null;
+let selectedItems = {}; // Estrutura temporária do carrinho de destinação
 
 // ── AUTHENTICATION ────────────────────────
 function doLogin(){
@@ -274,33 +336,45 @@ function doLogin(){
   
   if(user === AUTH_ADMIN_USER && pwd === AUTH_ADMIN_PWD){
     currentRole = 'admin';
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('loading').style.display = 'flex';
-    applyRole();
-    loadData();
   } else if(user === AUTH_VIEW_USER && pwd === AUTH_VIEW_PWD){
     currentRole = 'viewer';
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('loading').style.display = 'flex';
-    applyRole();
-    loadData();
+  } else if(user === AUTH_GEST_USER && pwd === AUTH_GEST_PWD){
+    currentRole = 'gestor';
   } else {
     document.getElementById('lerr').style.display = 'block';
     const b = document.querySelector('#login-screen .mbox');
     b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
     document.getElementById('lpwd').value = '';
+    return;
   }
+  
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('loading').style.display = 'flex';
+  applyRole();
+  loadData();
 }
 
 function applyRole(){
   const isAdmin = currentRole === 'admin';
+  const isGestor = currentRole === 'gestor';
+  
   document.querySelectorAll('.admin-only').forEach(el=>{
     el.style.display = isAdmin ? '' : 'none';
   });
+  
+  document.querySelectorAll('.admin-view-only').forEach(el=>{
+    el.style.display = (isAdmin || isGestor) ? '' : 'none';
+  });
+  
+  document.querySelectorAll('.gestor-only').forEach(el=>{
+    el.style.display = isGestor ? '' : 'none';
+  });
+
   const badge = document.getElementById('role-badge');
   if(badge){
-    badge.textContent = isAdmin ? '👑 Administrador' : '👤 Visualizador';
-    badge.style.color = isAdmin ? 'var(--og)' : 'var(--gn)';
+    if(isAdmin) { badge.textContent = '👑 Administrador'; badge.style.color = 'var(--og)'; }
+    else if(isGestor) { badge.textContent = '💼 Gestor'; badge.style.color = 'var(--bl)'; }
+    else { badge.textContent = '👤 Visualizador'; badge.style.color = 'var(--gn)'; }
   }
 }
 
@@ -331,7 +405,6 @@ const CL = ['#E8511A','#1A5FA8','#2EA86B','#D4830A','#9B59B6','#D43A3A','#16A085
 let CH = {};
 const dch = id => { if(CH[id]){ CH[id].destroy(); delete CH[id]; } };
 
-// ── PROXIES com cache-busting ─────────────
 function proxyUrls(base){
   const ts = Date.now();
   const u = base + '&_=' + ts;
@@ -361,7 +434,6 @@ async function fetchCSV(baseUrl, label){
   throw new Error('Não foi possível carregar '+label+'. Verifique se a aba está publicada e o gid está correto.');
 }
 
-// ── CSV PARSER genérico ───────────────────
 function pLine(line){
   const cols=[]; let cur='',inQ=false;
   for(let i=0;i<line.length;i++){
@@ -419,6 +491,7 @@ function parseObsoletos(txt){
     const dt = iData>=0 ? parseDateBR(c[iData]) : null;
     const diasParado = dt ? Math.round((hoje-dt)/86400000) : null;
     rows.push({
+      id       : (c[iCod]||'').replace(/"/g,'').trim() + '-' + local,
       codigo   : (c[iCod]||'').replace(/"/g,'').trim(),
       produto  : (c[iNome]||'').replace(/"/g,'').trim(),
       valorUnit: iVU>=0 ? pNum(c[iVU]) : 0,
@@ -513,8 +586,8 @@ async function loadData(manual=false){
 let uiOn = false;
 function initUI(){
   if(uiOn) return; uiOn = true;
-  const titles={visao:'Visão Geral',itens:'Itens Obsoletos'};
-  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos'};
+  const titles={visao:'Visão Geral',itens:'Itens Obsoletos',solicitacoes:'Solicitações de Destinação'};
+  const subs={visao:'Resumo do estoque obsoleto por local',itens:'Lista detalhada de todos os itens obsoletos',solicitacoes:'Histórico de fluxos e destinações solicitadas pelos Gestores'};
   document.querySelectorAll('.ni[data-pg]').forEach(n=>{
     n.onclick = function(){
       document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
@@ -524,6 +597,11 @@ function initUI(){
       document.getElementById('pg-'+id).classList.add('on');
       document.getElementById('ttl').textContent = titles[id];
       document.getElementById('tsub').textContent = subs[id];
+      
+      // Ocultar barra flutuante caso saia de itens
+      if (id !== 'itens') { document.getElementById('dest-bar').style.display = 'none'; }
+      else { updateDestinacaoBar(); }
+      
       applyF();
     };
   });
@@ -557,7 +635,6 @@ function renderPg(id){
   if(id==='visao'){
     const lg = grp(FILT,'local'); const lk = skeys(lg);
 
-    // % que cada local de obsoleto representa sobre o saldo daquele local
     const pctPorLocal = lk.map(k=>({
       local:k, valorObs:lg[k].valorTotal, saldo:SALDO[k]||0,
       pct: SALDO[k] ? (lg[k].valorTotal/SALDO[k]*100) : null
@@ -611,6 +688,7 @@ function renderPg(id){
   }
 
   if(id==='itens') renderTbl(FILT);
+  if(id==='solicitacoes') renderSolicitacoes();
 }
 
 // ── TABELA ────────────────────────────────
@@ -621,9 +699,15 @@ function renderTbl(data){
   });
   document.getElementById('tcnt').textContent = 'Exibindo '+sorted.length+' de '+RAW.length+' itens';
   document.getElementById('tfl').textContent = sorted.length+' itens';
+  
+  const isGestor = currentRole === 'gestor';
+  
   document.getElementById('tbody').innerHTML = sorted.map(r=>{
     const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
+    const isChecked = selectedItems[r.id] ? 'checked' : '';
+    
     return '<tr>'
+      + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box chk-item" data-id="${r.id}" ${isChecked} onchange="handleSelect(this)"></td>` : '')
       +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
       +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
       +'<td><span class="bdg">'+r.local+'</span></td>'
@@ -635,6 +719,7 @@ function renderTbl(data){
       +'</tr>';
   }).join('');
   updH();
+  if(isGestor) updateDestinacaoBar();
 }
 
 function ftbl(q){
@@ -644,9 +729,199 @@ function ftbl(q){
 }
 function srt(key){ if(sk===key) sd*=-1; else{sk=key;sd=-1;} ftbl(document.getElementById('tsrch').value); }
 function updH(){
-  const km={codigo:0,produto:1,local:2,valorUnit:3,qtd:4,valorTotal:5,ultimaSaida:6,diasParado:7};
+  const km={codigo:1,produto:2,local:3,valorUnit:4,qtd:5,valorTotal:6,ultimaSaida:7,diasParado:8};
   document.querySelectorAll('#pg-itens thead th').forEach(t=>t.classList.remove('sa','sd'));
-  const idx=km[sk]; if(idx!=null){ const t=document.querySelectorAll('#pg-itens thead th')[idx]; if(t)t.classList.add(sd===1?'sa':'sd'); }
+  const idx=km[sk]; if(idx!=null){ const t=document.querySelectorAll('#pg-itens thead th')[currentRole==='gestor'?idx:idx-1]; if(t)t.classList.add(sd===1?'sa':'sd'); }
+}
+
+// ══════════════════════════════════════════
+//  LÓGICA FLUXO DE GESTÃO E DESTINAÇÃO (NOVO)
+// ══════════════════════════════════════════
+function handleSelect(el) {
+  const id = el.dataset.id;
+  if (el.checked) {
+    const item = RAW.find(r => r.id === id);
+    if (item && !selectedItems[id]) {
+      selectedItems[id] = { ...item, destino: 'Aguardando Avaliação', outroTexto: '', obsGeral: '' };
+    }
+  } else {
+    delete selectedItems[id];
+  }
+  updateDestinacaoBar();
+}
+
+function toggleSelectAll(el) {
+  document.querySelectorAll('.chk-item').forEach(chk => {
+    chk.checked = el.checked;
+    handleSelect(chk);
+  });
+}
+
+function updateDestinacaoBar() {
+  const count = Object.keys(selectedItems).length;
+  const bar = document.getElementById('dest-bar');
+  if (currentRole === 'gestor' && count > 0 && document.getElementById('pg-itens').classList.contains('on')) {
+    document.getElementById('dest-count').textContent = count;
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function openDrawer() {
+  const body = document.getElementById('dr-body-items');
+  body.innerHTML = '';
+  
+  Object.keys(selectedItems).forEach(id => {
+    const item = selectedItems[id];
+    const div = document.createElement('div');
+    div.className = 'dr-item';
+    div.id = `dr-node-${id}`;
+    div.innerHTML = `
+      <span class="dr-item-del" onclick="removeDrawerItem('${id}')">✕ Remover</span>
+      <div style="font-size:12px; font-weight:600; color:var(--dk); max-width:85%">${item.produto}</div>
+      <div style="font-size:11px; color:var(--g4); margin-top:2px">Cód: ${item.codigo} | Qtd: ${item.qtd} | Local: ${item.local}</div>
+      
+      <select class="dr-sel" onchange="handleDestonChange('${id}', this.value)">
+        <option value="Aguardando Avaliação" ${item.destino==='Aguardando Avaliação'?'selected':''}>Aguardando Avaliação</option>
+        <option value="Venda" ${item.destino==='Venda'?'selected':''}>Venda</option>
+        <option value="Doação" ${item.destino==='Doação'?'selected':''}>Doação</option>
+        <option value="Transferência" ${item.destino==='Transferência'?'selected':''}>Transferência</option>
+        <option value="Reaproveitamento Interno" ${item.destino==='Reaproveitamento Interno'?'selected':''}>Reaproveitamento Interno</option>
+        <option value="Recuperação / Reforma" ${item.destino==='Recuperação / Reforma'?'selected':''}>Recuperação / Reforma</option>
+        <option value="Sucata" ${item.destino==='Sucata'?'selected':''}>Sucata</option>
+        <option value="Descarte" ${item.destino==='Descarte'?'selected':''}>Descarte</option>
+        <option value="Outro" ${item.destino==='Outro'?'selected':''}>Outro</option>
+      </select>
+      
+      <input type="text" class="dr-tx" id="out-${id}" placeholder="Descreva o outro destino..." style="display:${item.destino==='Outro'?'block':'none'}" value="${item.outroTexto||''}" oninput="selectedItems['${id}'].outroTexto=this.value">
+      <textarea class="dr-tx" placeholder="Observações adicionais gerais para este item..." oninput="selectedItems['${id}'].obsGeral=this.value">${item.obsGeral||''}</textarea>
+    `;
+    body.appendChild(div);
+  });
+  
+  document.getElementById('dr-dest').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('dr-dest').classList.remove('open');
+}
+
+function removeDrawerItem(id) {
+  delete selectedItems[id];
+  const node = document.getElementById(`dr-node-${id}`);
+  if(node) node.remove();
+  
+  // Desmarca na tabela se estiver visível
+  const chk = document.querySelector(`.chk-item[data-id="${id}"]`);
+  if(chk) chk.checked = false;
+  
+  updateDestinacaoBar();
+  if(Object.keys(selectedItems).length === 0) closeDrawer();
+}
+
+function handleDestonChange(id, value) {
+  selectedItems[id].destino = value;
+  const outField = document.getElementById(`out-${id}`);
+  if(outField) outField.style.display = value === 'Outro' ? 'block' : 'none';
+}
+
+function submitDestinacao() {
+  const itemsArray = Object.values(selectedItems);
+  if(itemsArray.length === 0) return;
+  
+  // Criação do bloco de solicitação estruturado
+  const novaSolicitacao = {
+    id: 'SOL-' + Date.now(),
+    gestor: AUTH_GEST_USER,
+    data: new Date().toLocaleString('pt-BR'),
+    status: 'Enviado',
+    itensCount: itemsArray.length,
+    itens: itemsArray.map(i => ({
+      codigo: i.codigo,
+      produto: i.produto,
+      local: i.local,
+      qtd: i.qtd,
+      valorTotal: i.valorTotal,
+      destino: i.destino === 'Outro' ? `Outro (${i.outroTexto || 'Não especificado'})` : i.destino,
+      obs: i.obsGeral || '—'
+    }))
+  };
+  
+  // Salva no localStorage para simular envio e persistência ao Admin
+  let existentes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
+  existentes.unshift(novaSolicitacao);
+  localStorage.setItem('energia_solicitacoes', JSON.stringify(existentes));
+  
+  alert('🚀 Solicitação de Destinação enviada com sucesso ao Administrador!');
+  
+  // Limpa o carrinho/seleção atual
+  selectedItems = {};
+  document.getElementById('chk-all').checked = false;
+  closeDrawer();
+  applyF();
+}
+
+function renderSolicitacoes() {
+  const container = document.getElementById('sol-container');
+  const solicitacoes = JSON.parse(localStorage.getItem('energia_solicitacoes') || '[]');
+  
+  if (solicitacoes.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px; color:var(--g4)">
+        <span style="font-size:40px">📂</span>
+        <p style="margin-top:10px; font-size:13px">Nenhuma solicitação de destinação foi enviada até o momento.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = solicitacoes.map(sol => {
+    let rowsHtml = sol.itens.map(i => `
+      <tr style="border-bottom:1px solid var(--g1)">
+        <td style="padding:6px 8px; color:var(--g5)">${i.codigo}</td>
+        <td style="padding:6px 8px; font-weight:500">${i.produto}</td>
+        <td style="padding:6px 8px;"><span class="bdg">${i.local}</span></td>
+        <td style="padding:6px 8px; text-align:center">${i.qtd}</td>
+        <td style="padding:6px 8px; text-align:right">${fBRL(i.valorTotal)}</td>
+        <td style="padding:6px 8px; font-weight:600; color:var(--bl)">${i.destino}</td>
+        <td style="padding:6px 8px; color:var(--g4); font-size:11px">${i.obs}</td>
+      </tr>
+    `).join('');
+
+    return `
+      <div class="sol-card">
+        <div class="sol-head">
+          <div>
+            <div style="font-size:14px; font-weight:700; color:var(--dk)">Solicitação: ${sol.id}</div>
+            <div style="font-size:11px; color:var(--g4); margin-top:2px">Enviado por: <b>${sol.gestor}</b> | Data: ${sol.data}</div>
+          </div>
+          <span class="sol-badge">${sol.status}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="min-width:100%; font-size:11px; margin-top:8px">
+            <thead>
+              <tr style="background:var(--g1); color:var(--dk)">
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Código</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Produto</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Local</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px; text-align:center">Qtd</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px; text-align:right">Valor Total</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Destino Proposto</th>
+                <th style="padding:6px 8px; color:var(--dk); font-size:10px">Observação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align:right; font-size:11px; color:var(--g5); margin-top:10px; font-weight:600">
+          Total de Itens: ${sol.itensCount}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 </script>
 </body>
