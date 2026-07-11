@@ -670,35 +670,11 @@ async function loadData(manual=false){
   }
 }
 
-// Recarga leve pós-escrita: depois de criar/atualizar uma solicitação só
-// Pendentes e Histórico podem ter mudado — Estoque Obsoleto e Saldo não.
-// Evita refazer as 4 buscas (e a cadeia de proxy) quando só 2 mudaram.
-async function reloadWorkflows(){
-  const btn = document.getElementById('bsync');
-  if(btn){ btn.classList.add('syncing'); btn.classList.remove('sync-ok'); }
-  try{
-    const [csvPendentes, csvHistorico] = await Promise.all([
-      fetchCSV(URL_PENDENTES, 'Fila de Pendências'),
-      fetchCSV(URL_HISTORICO, 'Histórico Consolidado')
-    ]);
-
-    RAW_PENDENTES = parseWorkflowPendentes(csvPendentes);
-    RAW_HISTORICO = parseWorkflowHistorico(csvHistorico);
-
-    const now = new Date();
-    document.getElementById('upd-t').textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-
-    if(btn){ btn.classList.remove('syncing'); btn.classList.add('sync-ok'); setTimeout(()=>btn.classList.remove('sync-ok'),2500); }
-
-    refreshAdminIconBadge();
-    const activeMenu = document.querySelector('.ni.on');
-    renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
-  } catch(e){
-    console.error(e);
-    if(btn) btn.classList.remove('syncing');
-    alert('⚠️ Não foi possível atualizar a lista de solicitações agora. Use "Sincronizar" para tentar novamente.');
-  }
-}
+// Nota: após criar/atualizar solicitações, o sistema não busca o CSV de novo
+// (o link publicado do Google pode demorar a propagar a escrita mais recente).
+// As telas são atualizadas via estado local otimista — veja
+// aplicarAtualizacaoLocalStatus() mais abaixo. O botão "Sincronizar" (loadData)
+// continua disponível para reconciliar tudo com a planilha quando o usuário quiser.
 
 // ── ROTINAS DE FILTRO E MÓDULOS DE TELA ────
 let uiOn = false;
@@ -1012,8 +988,9 @@ async function dispatchLoteDestinacao() {
     try {
       await callAppsScriptAPI('criarSolicitacao', pacoteItens);
       writeCartInSession({});
-      alert('🚀 Solicitação persistida com sucesso na planilha! Atualizando indicadores...');
-      await reloadWorkflows();
+      alert('🚀 Solicitação persistida com sucesso na planilha!');
+      pacoteItens.forEach(item => RAW_PENDENTES.push({ ...item, obsAdmin: '' }));
+      refreshAdminIconBadge();
     } catch(err) {
       console.error(err);
     }
@@ -1030,13 +1007,40 @@ function switchAdminTab(tabName) {
   renderMóduloSolicitacoes();
 }
 
+// Atualização otimista local: aplica o resultado da gravação diretamente em
+// RAW_PENDENTES/RAW_HISTORICO sem depender do CSV publicado já ter atualizado
+// (a publicação do Google Sheets tem um delay de propagação que faria o item
+// "concluído" continuar aparecendo na lista por alguns minutos).
+function aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsAdmin, workflowEncerrado) {
+  const item = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
+  if (item) {
+    item.statusItem = novoStatus;
+    item.obsAdmin = obsAdmin;
+  }
+
+  if (workflowEncerrado) {
+    const dataConclusao = new Date().toLocaleDateString('pt-BR') + ' ' +
+      new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    RAW_PENDENTES
+      .filter(i => i.idWorkflow === idWorkflow)
+      .forEach(i => RAW_HISTORICO.push({ ...i, dataConclusao }));
+    RAW_PENDENTES = RAW_PENDENTES.filter(i => i.idWorkflow !== idWorkflow);
+  }
+
+  const now = new Date();
+  document.getElementById('upd-t').textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  refreshAdminIconBadge();
+  const activeMenu = document.querySelector('.ni.on');
+  renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
+}
+
 async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
   const uniqueKey = `${idWorkflow}-${codigoItem}`;
   const obsText = document.getElementById(`obs-admin-${uniqueKey}`).value.trim() || '—';
   
   if (novoStatus === 'Concluída' || novoStatus === 'Cancelada') {
     if (!confirm(`Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`)) {
-      reloadWorkflows();
+      renderMóduloSolicitacoes(); // desfaz visualmente a troca do <select>, sem refetch
       return;
     }
   }
@@ -1054,7 +1058,7 @@ async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
     } else {
       alert(`⚡ Status do item ${codigoItem} updated na planilha.`);
     }
-    await reloadWorkflows();
+    aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsText, resultado.workflowEncerrado);
   } catch(e) {
     console.error(e);
   }
@@ -1185,14 +1189,17 @@ function executarVerificacaoInteligenteEstoque() {
           const primeiroPendente = itensLote.find(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
           if (primeiroPendente) {
             try {
-              await callAppsScriptAPI('atualizarStatusItem', {
+              const resultado = await callAppsScriptAPI('atualizarStatusItem', {
                 idWorkflow: idWf,
                 codigoItem: primeiroPendente.codigoItem,
                 statusItem: 'Concluída',
                 obsAdmin: 'Baixa automática gerada por validação assistida de estoque vazio.'
               });
-              alert(`🎯 Workflow ${idWf} arquivado com sucesso no Histórico.`);
-              await reloadWorkflows();
+              aplicarAtualizacaoLocalStatus(idWf, primeiroPendente.codigoItem, 'Concluída',
+                'Baixa automática gerada por validação assistida de estoque vazio.', resultado.workflowEncerrado);
+              if (resultado.workflowEncerrado) {
+                alert(`🎯 Workflow ${idWf} arquivado com sucesso no Histórico.`);
+              }
             } catch(e) { console.error(e); }
           }
         }
