@@ -144,6 +144,9 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .sol-block { background: var(--wh); border: 1px solid var(--g2); border-radius: var(--rad); padding: 18px; margin-bottom: 16px; }
 .sol-block-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--g1); padding-bottom: 12px; margin-bottom: 12px; }
 
+.sol-row-dirty { background: #FFF8F0 !important; box-shadow: inset 3px 0 0 var(--og); }
+.wf-badge { font-size: 9px; color: var(--g4); background: var(--g1); padding: 2px 6px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+
 /* ── ABAS INTERNAS ADMIN ── */
 .admin-tabs-nav { display: flex; gap: 8px; border-bottom: 2px solid var(--g2); margin-bottom: 16px; }
 .admin-tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--g4); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
@@ -330,7 +333,19 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
       <button class="admin-tab-btn active" id="btn-tab-pendentes" onclick="switchAdminTab('pendentes')">Pendentes</button>
       <button class="admin-tab-btn" id="btn-tab-historico" onclick="switchAdminTab('historico')">Histórico de Destinações</button>
     </div>
+    <div class="th2" style="border:1px solid var(--g2);border-radius:var(--rad) var(--rad) 0 0;background:var(--wh)">
+      <input class="tsch" type="text" placeholder="🔍 Buscar código, produto, local, destino..." oninput="ftblSol(this.value)" id="sol-srch" style="width:280px">
+      <button class="btn-sync" id="btn-marcar-visiveis" style="display:none" onclick="marcarVisiveisComoConcluida()">✓ Marcar visíveis como Concluída</button>
+    </div>
     <div id="admin-sol-wrapper"></div>
+  </div>
+</div>
+
+<div id="admin-draft-bar" style="position:fixed;bottom:20px;left:calc(var(--sw) + 22px);right:22px;background:var(--dk2);color:#fff;border-radius:var(--rad);padding:14px 24px;display:none;align-items:center;justify-content:space-between;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:400">
+  <div>📝 <b id="admin-draft-count">0</b> alteração(ões) não salva(s)</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-sync" style="background:transparent;border-color:var(--g3);color:var(--g3)" onclick="descartarAlteracoesLocais()">Descartar</button>
+    <button class="mbtn" style="width:auto;padding:0 24px;margin:0;height:38px" onclick="aplicarAlteracoesLocais()">Aplicar Alterações</button>
   </div>
 </div>
 
@@ -772,6 +787,9 @@ function initUI(){
       
       if (id !== 'itens') { document.getElementById('cart-float-bar').style.display = 'none'; }
       else { refreshFloatBar(); }
+
+      if (id !== 'solicitacoes') { document.getElementById('admin-draft-bar').style.display = 'none'; }
+      else { refreshAdminDraftBar(); }
       
       applyF();
     };
@@ -1082,7 +1100,7 @@ async function dispatchLoteDestinacao() {
   }
   
   const ok = await showConfirmModal(
-    `Deseja efetivar o envio deste lote com ${list.length} material(is) para a base de dados da Planilha?`,
+    `Deseja solicitar a destinação destes ${list.length} material(is)?`,
     { icon: '📦', okLabel: 'Enviar Lote' }
   );
   if (ok) {
@@ -1122,18 +1140,117 @@ function switchAdminTab(tabName) {
   currentAdminViewTab = tabName;
   document.getElementById('btn-tab-pendentes').classList.toggle('active', tabName === 'pendentes');
   document.getElementById('btn-tab-historico').classList.toggle('active', tabName === 'historico');
+  document.getElementById('sol-srch').value = '';
+  solSearchTerm = '';
   renderMóduloSolicitacoes();
+}
+
+// ══════════════════════════════════════════
+//  RASCUNHO DE ALTERAÇÕES DO ADMIN (mesmo conceito do Carrinho do Gestor)
+// ══════════════════════════════════════════
+// O Admin vai marcando status/parecer item a item sem nenhuma chamada de
+// rede — tudo fica em ADMIN_DRAFT até ele clicar "Aplicar Alterações", que
+// então envia tudo em UMA única requisição ao Apps Script, independente de
+// quantos itens (ou workflows diferentes) foram alterados.
+let ADMIN_DRAFT = {}; // chave `${idWorkflow}::${codigoItem}` -> {idWorkflow, codigoItem, statusItem, obsAdmin}
+let solSk = 'valorTotal', solSd = -1;
+let solSearchTerm = '';
+
+function chaveDraft(idWorkflow, codigoItem) { return idWorkflow + '::' + codigoItem; }
+
+function marcarAlteracaoLocal(idWorkflow, codigoItem, campo, valor) {
+  const k = chaveDraft(idWorkflow, codigoItem);
+  const original = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
+  if (!original) return;
+  if (!ADMIN_DRAFT[k]) {
+    ADMIN_DRAFT[k] = { idWorkflow, codigoItem, statusItem: original.statusItem, obsAdmin: original.obsAdmin || '' };
+  }
+  ADMIN_DRAFT[k][campo] = valor;
+  renderMóduloSolicitacoes();
+}
+
+function refreshAdminDraftBar() {
+  const bar = document.getElementById('admin-draft-bar');
+  const n = Object.keys(ADMIN_DRAFT).length;
+  const naTelaCerta = currentAdminViewTab === 'pendentes' && document.getElementById('pg-solicitacoes').classList.contains('on');
+  if (n > 0 && naTelaCerta) {
+    document.getElementById('admin-draft-count').textContent = n;
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function descartarAlteracoesLocais() {
+  ADMIN_DRAFT = {};
+  renderMóduloSolicitacoes();
+  showToast('Alterações descartadas.', 'info');
+}
+
+async function aplicarAlteracoesLocais() {
+  const alteracoes = Object.values(ADMIN_DRAFT);
+  if (alteracoes.length === 0) return;
+
+  const ok = await showConfirmModal(
+    `Confirma aplicar ${alteracoes.length} alteração(ões) de status/parecer na planilha?`,
+    { icon: '💾', okLabel: 'Aplicar Alterações' }
+  );
+  if (!ok) return;
+
+  try {
+    const resultado = await callAppsScriptAPI('aplicarAlteracoesEmMassa', { alteracoes });
+    const workflowsEncerrados = resultado.workflowsEncerrados || [];
+
+    // Agrupa as alterações por workflow para atualizar o estado local de uma vez
+    const porWorkflow = {};
+    alteracoes.forEach(alt => {
+      if (!porWorkflow[alt.idWorkflow]) porWorkflow[alt.idWorkflow] = [];
+      porWorkflow[alt.idWorkflow].push(alt);
+    });
+    Object.keys(porWorkflow).forEach(wf => {
+      aplicarAtualizacoesLocaisEmLote(wf, porWorkflow[wf], workflowsEncerrados.indexOf(wf) !== -1);
+    });
+
+    ADMIN_DRAFT = {};
+    showToast(
+      workflowsEncerrados.length > 0
+        ? `${alteracoes.length} alteração(ões) aplicada(s) — ${workflowsEncerrados.length} workflow(s) migrado(s) para o Histórico.`
+        : `${alteracoes.length} alteração(ões) aplicada(s).`,
+      'success'
+    );
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function marcarVisiveisComoConcluida() {
+  const visiveis = getItensSolicitacoesFiltrados();
+  let n = 0;
+  visiveis.forEach(item => {
+    if (item.statusItem !== 'Concluída' && item.statusItem !== 'Cancelada') {
+      marcarAlteracaoLocalSilenciosa(item.idWorkflow, item.codigoItem, 'statusItem', 'Concluída');
+      n++;
+    }
+  });
+  renderMóduloSolicitacoes();
+  if (n > 0) showToast(`${n} item(ns) marcado(s) como Concluída no rascunho. Clique em "Aplicar Alterações" para confirmar.`, 'info');
+}
+
+// Igual a marcarAlteracaoLocal, mas sem re-renderizar a cada chamada (usado em laço)
+function marcarAlteracaoLocalSilenciosa(idWorkflow, codigoItem, campo, valor) {
+  const k = chaveDraft(idWorkflow, codigoItem);
+  const original = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
+  if (!original) return;
+  if (!ADMIN_DRAFT[k]) {
+    ADMIN_DRAFT[k] = { idWorkflow, codigoItem, statusItem: original.statusItem, obsAdmin: original.obsAdmin || '' };
+  }
+  ADMIN_DRAFT[k][campo] = valor;
 }
 
 // Atualização otimista local: aplica o resultado da gravação diretamente em
 // RAW_PENDENTES/RAW_HISTORICO sem depender do CSV publicado já ter atualizado
 // (a publicação do Google Sheets tem um delay de propagação que faria o item
 // "concluído" continuar aparecendo na lista por alguns minutos).
-// Atualização otimista local: aplica o resultado da gravação diretamente em
-// RAW_PENDENTES/RAW_HISTORICO sem depender do CSV publicado já ter atualizado
-// (a publicação do Google Sheets tem um delay de propagação que faria o item
-// "concluído" continuar aparecendo na lista por alguns minutos).
-// Aceita um ou vários itens de uma vez (uso individual e em lote).
 function aplicarAtualizacoesLocaisEmLote(idWorkflow, itensAtualizados, workflowEncerrado) {
   itensAtualizados.forEach(({ codigoItem, statusItem, obsAdmin }) => {
     const item = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
@@ -1159,186 +1276,138 @@ function aplicarAtualizacoesLocaisEmLote(idWorkflow, itensAtualizados, workflowE
   renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
 }
 
-function aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsAdmin, workflowEncerrado) {
-  aplicarAtualizacoesLocaisEmLote(idWorkflow, [{ codigoItem, statusItem: novoStatus, obsAdmin }], workflowEncerrado);
-}
-
-async function aprovarLoteCompleto(idWorkflow) {
-  const itensLote = RAW_PENDENTES.filter(i => i.idWorkflow === idWorkflow);
-  const pendentesReais = itensLote.filter(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
-
-  if (pendentesReais.length === 0) {
-    showToast('Este lote já está totalmente finalizado.', 'info');
-    return;
-  }
-
-  const ok = await showConfirmModal(
-    `Confirma aprovar todos os ${pendentesReais.length} item(ns) pendentes do workflow ${idWorkflow} como "Concluída"?`,
-    { icon: '✅', okLabel: 'Aprovar Lote' }
+// ── FILTRO E ORDENAÇÃO (mesmo padrão da tabela de Itens Obsoletos) ──
+function getItensSolicitacoesFiltrados() {
+  const baseDados = currentAdminViewTab === 'pendentes' ? RAW_PENDENTES : RAW_HISTORICO;
+  const q = solSearchTerm.toLowerCase();
+  let filtrados = !q ? [...baseDados] : baseDados.filter(i =>
+    (i.codigoItem||'').toLowerCase().includes(q) ||
+    (i.descricao||'').toLowerCase().includes(q) ||
+    (i.local||'').toLowerCase().includes(q) ||
+    (i.destino||'').toLowerCase().includes(q) ||
+    (i.idWorkflow||'').toLowerCase().includes(q)
   );
-  if (!ok) return;
-
-  const itensPayload = pendentesReais.map(i => ({
-    codigoItem: i.codigoItem,
-    statusItem: 'Concluída',
-    obsAdmin: (i.obsAdmin && i.obsAdmin !== '—') ? i.obsAdmin : 'Aprovação em lote'
-  }));
-
-  try {
-    const resultado = await callAppsScriptAPI('finalizarLote', { idWorkflow, itens: itensPayload });
-    aplicarAtualizacoesLocaisEmLote(idWorkflow, itensPayload, resultado.workflowEncerrado);
-    showToast(
-      resultado.workflowEncerrado
-        ? `Workflow ${idWorkflow} finalizado e migrado para o Histórico.`
-        : `${itensPayload.length} item(ns) aprovado(s).`,
-      'success'
-    );
-  } catch(e) {
-    console.error(e);
-  }
+  filtrados.sort((a,b) => {
+    const av = a[solSk], bv = b[solSk];
+    const cmp = (typeof av === 'number' ? av - bv : String(av||'').localeCompare(String(bv||'')));
+    return cmp * solSd;
+  });
+  return filtrados;
 }
 
-async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
-  const uniqueKey = `${idWorkflow}-${codigoItem}`;
-  const obsText = document.getElementById(`obs-admin-${uniqueKey}`).value.trim() || '—';
-  
-  if (novoStatus === 'Concluída' || novoStatus === 'Cancelada') {
-    const ok = await showConfirmModal(
-      `Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`,
-      { icon: novoStatus === 'Concluída' ? '✅' : '🚫', okLabel: 'Confirmar' }
-    );
-    if (!ok) {
-      renderMóduloSolicitacoes(); // desfaz visualmente a troca do <select>, sem refetch
-      return;
-    }
-  }
-  
-  try {
-    const resultado = await callAppsScriptAPI('atualizarStatusItem', {
-      idWorkflow: idWorkflow,
-      codigoItem: codigoItem,
-      statusItem: novoStatus,
-      obsAdmin: obsText
-    });
-    
-    if (resultado.workflowEncerrado) {
-      showToast(`Workflow ${idWorkflow} finalizado e migrado para o Histórico.`, 'success');
-    } else {
-      showToast(`Status do item ${codigoItem} atualizado.`, 'success');
-    }
-    aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsText, resultado.workflowEncerrado);
-  } catch(e) {
-    console.error(e);
-  }
+function ftblSol(q) {
+  solSearchTerm = q;
+  renderMóduloSolicitacoes();
+}
+
+function srtSol(key) {
+  if (solSk === key) solSd *= -1; else { solSk = key; solSd = -1; }
+  renderMóduloSolicitacoes();
 }
 
 function renderMóduloSolicitacoes() {
   const wrapper = document.getElementById('admin-sol-wrapper');
-  const baseDados = currentAdminViewTab === 'pendentes' ? RAW_PENDENTES : RAW_HISTORICO;
-  
-  if (baseDados.length === 0) {
+  const btnMarcarVisiveis = document.getElementById('btn-marcar-visiveis');
+  btnMarcarVisiveis.style.display = currentAdminViewTab === 'pendentes' ? 'flex' : 'none';
+
+  const itens = getItensSolicitacoesFiltrados();
+
+  if (itens.length === 0) {
     wrapper.innerHTML = `
-      <div style="text-align:center; padding:60px 20px; color:var(--g4)">
+      <div style="text-align:center; padding:60px 20px; color:var(--g4); border:1px solid var(--g2); border-top:none; background:var(--wh)">
         <span style="font-size:36px">📋</span>
-        <p style="margin-top:10px; font-size:13px">Nenhum registro encontrado para exibição na aba corporativa.</p>
+        <p style="margin-top:10px; font-size:13px">Nenhum registro encontrado.</p>
       </div>
     `;
+    refreshAdminDraftBar();
     return;
   }
-  
-  const workflowsAgrupados = {};
-  baseDados.forEach(item => {
-    if (!workflowsAgrupados[item.idWorkflow]) {
-      workflowsAgrupados[item.idWorkflow] = {
-        idWorkflow: item.idWorkflow,
-        dataSolicitacao: item.dataSolicitacao,
-        dataConclusao: item.dataConclusao || null,
-        solicitante: item.solicitante,
-        itens: []
-      };
-    }
-    workflowsAgrupados[item.idWorkflow].itens.push(item);
-  });
-  
-  const listaCards = Object.values(workflowsAgrupados).sort((a,b) => b.idWorkflow.localeCompare(a.idWorkflow));
-  
-  wrapper.innerHTML = listaCards.map(wf => {
-    let tRows = wf.itens.map(li => {
-      const uniqueKey = `${wf.idWorkflow}-${li.codigoItem}`;
-      let acaoHTML = '';
-      
-      if (currentAdminViewTab === 'pendentes') {
-        const opcoes = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
-        acaoHTML = `
-          <td>
-            <select class="admin-select-status" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.value)">
-              ${opcoes.map(o => `<option value="${o}" ${li.statusItem === o ? 'selected' : ''}>${o}</option>`).join('')}
-            </select>
-          </td>
-          <td>
-            <input type="text" class="cart-tx" id="obs-admin-${uniqueKey}" placeholder="Parecer técnico..." value="${li.obsAdmin || ''}" onchange="submeterAlteracaoStatusItem('${wf.idWorkflow}', '${li.codigoItem}', this.parentElement.previousElementSibling.querySelector('select').value)">
-          </td>
-        `;
-      } else {
-        acaoHTML = `
-          <td style="font-weight:700; color:var(--og)">${li.statusItem}</td>
-          <td style="color:var(--g5); font-style:italic">${li.obsAdmin || '—'}</td>
-        `;
-      }
-      
-      return `
-        <tr style="border-bottom:1px solid var(--g1)">
-          <td style="padding:8px; color:var(--g5)">${li.codigoItem}</td>
-          <td style="padding:8px; font-weight:500" title="${li.descricao}">${li.descricao.length > 35 ? li.descricao.slice(0,34)+'…' : li.descricao}</td>
-          <td style="padding:8px;"><span class="bdg">${li.local}</span></td>
-          <td style="padding:8px; text-align:center">${li.quantidade}</td>
-          <td style="padding:8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
-          <td style="padding:8px; font-weight:700; color:var(--bl)">${li.destino}</td>
-          <td style="padding:8px; color:var(--g4); font-size:11px;" title="${li.obsGestor}">${li.obsGestor}</td>
-          ${acaoHTML}
-        </tr>
-      `;
-    }).join('');
 
-    const subInfo = wf.dataConclusao ? ` | Finalizado em: <b>${wf.dataConclusao}</b>` : '';
-    const pendentesNoLote = wf.itens.filter(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada').length;
-    const botaoLote = (currentAdminViewTab === 'pendentes' && pendentesNoLote > 1)
-      ? `<button class="btn-clr" style="height:30px;padding:0 14px;font-size:12px" onclick="aprovarLoteCompleto('${wf.idWorkflow}')">✓ Aprovar Lote (${pendentesNoLote})</button>`
-      : '';
+  const isPendentes = currentAdminViewTab === 'pendentes';
+  const opcoes = ['Aguardando Análise', 'Em Processamento', 'Concluída', 'Cancelada'];
+  const sortIcon = (key) => solSk === key ? (solSd === -1 ? ' ▼' : ' ▲') : '';
+
+  const headerCols = [
+    ['idWorkflow', 'Workflow'],
+    ['codigoItem', 'Código'],
+    ['descricao', 'Produto'],
+    ['local', 'Local'],
+    ['quantidade', 'Qtd'],
+    ['valorTotal', 'Valor Total'],
+    ['destino', 'Destino'],
+  ];
+
+  let theadExtra = '';
+  if (isPendentes) {
+    theadExtra = `<th style="padding:9px 11px">Status</th><th style="padding:9px 11px">Parecer Admin</th>`;
+  } else {
+    theadExtra = `<th onclick="srtSol('dataConclusao')" style="padding:9px 11px;cursor:pointer">Conclusão${sortIcon('dataConclusao')}</th><th style="padding:9px 11px">Status</th><th style="padding:9px 11px">Parecer Admin</th>`;
+  }
+
+  const theadCols = headerCols.map(([key,label]) =>
+    `<th onclick="srtSol('${key}')" style="padding:9px 11px;cursor:pointer;white-space:nowrap">${label}${sortIcon(key)}</th>`
+  ).join('');
+
+  const rows = itens.map(li => {
+    const draft = ADMIN_DRAFT[chaveDraft(li.idWorkflow, li.codigoItem)];
+    const statusAtual = draft ? draft.statusItem : li.statusItem;
+    const obsAtual = draft ? draft.obsAdmin : (li.obsAdmin || '');
+    const isDirty = !!draft;
+
+    let acaoHTML;
+    if (isPendentes) {
+      acaoHTML = `
+        <td style="padding:7px 8px">
+          <select class="admin-select-status" onchange="marcarAlteracaoLocal('${li.idWorkflow}', '${li.codigoItem}', 'statusItem', this.value)">
+            ${opcoes.map(o => `<option value="${o}" ${statusAtual === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </td>
+        <td style="padding:7px 8px">
+          <input type="text" class="cart-tx" placeholder="Parecer técnico..." value="${obsAtual}" onchange="marcarAlteracaoLocal('${li.idWorkflow}', '${li.codigoItem}', 'obsAdmin', this.value)">
+        </td>
+      `;
+    } else {
+      acaoHTML = `
+        <td style="padding:7px 8px; font-size:11px; color:var(--g5)">${li.dataConclusao || '—'}</td>
+        <td style="padding:7px 8px; font-weight:700; color:var(--og)">${li.statusItem}</td>
+        <td style="padding:7px 8px; color:var(--g5); font-style:italic">${li.obsAdmin || '—'}</td>
+      `;
+    }
 
     return `
-      <div class="sol-block">
-        <div class="sol-block-header">
-          <div>
-            <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${wf.idWorkflow}</div>
-            <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${wf.solicitante}</b> | Enviado em: ${wf.dataSolicitacao}${subInfo}</div>
-          </div>
-          ${botaoLote}
-        </div>
-        <div style="overflow-x:auto">
-          <table style="min-width:100%; font-size:11px;">
-            <thead>
-              <tr style="background:var(--g1); color:var(--dk)">
-                <th style="padding:7px 8px; color:var(--dk)">Código</th>
-                <th style="padding:7px 8px; color:var(--dk)">Produto</th>
-                <th style="padding:7px 8px; color:var(--dk)">Local</th>
-                <th style="padding:7px 8px; color:var(--dk); text-align:center">Qtd</th>
-                <th style="padding:7px 8px; color:var(--dk); text-align:right">Valor Total</th>
-                <th style="padding:7px 8px; color:var(--dk)">Destino</th>
-                <th style="padding:7px 8px; color:var(--dk)">Obs Gestor</th>
-                <th style="padding:7px 8px; color:var(--dk)">Status Item</th>
-                <th style="padding:7px 8px; color:var(--dk)">Observações Admin (Parecer)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tRows}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <tr class="${isDirty ? 'sol-row-dirty' : ''}" style="border-bottom:1px solid var(--g1)">
+        <td style="padding:7px 8px"><span class="wf-badge" title="${li.idWorkflow}">${li.idWorkflow}</span></td>
+        <td style="padding:7px 8px; color:var(--g5)">${li.codigoItem}</td>
+        <td style="padding:7px 8px; font-weight:500" title="${li.descricao}">${li.descricao.length > 34 ? li.descricao.slice(0,33)+'…' : li.descricao}</td>
+        <td style="padding:7px 8px"><span class="bdg">${li.local}</span></td>
+        <td style="padding:7px 8px; text-align:center">${li.quantidade}</td>
+        <td style="padding:7px 8px; text-align:right; font-variant-numeric:tabular-nums">${fBRL(li.valorTotal)}</td>
+        <td style="padding:7px 8px; font-weight:700; color:var(--bl)">${li.destino}</td>
+        ${acaoHTML}
+      </tr>
     `;
   }).join('');
+
+  wrapper.innerHTML = `
+    <div class="tw" style="border-top:none;border-radius:0 0 var(--rad) var(--rad);margin-bottom:16px">
+      <div style="max-height:560px;overflow-y:auto">
+        <table style="min-width:100%; font-size:12px">
+          <thead>
+            <tr style="background:var(--dk2); color:#fff">
+              ${theadCols}
+              ${theadExtra}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="tfoot"><span>${itens.length} item(ns)</span><b>Grupo Energia — Solicitações de Destinação</b></div>
+    </div>
+  `;
+
+  refreshAdminDraftBar();
 }
+
 
 // ── AUDITORIA ASSISTIDA DE ESTOQUE VAZIO ──
 function executarVerificacaoInteligenteEstoque() {
