@@ -154,6 +154,31 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 
 /* Bloqueador de Tela Técnico */
 .glass-loader { position: fixed; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 10px; }
+
+/* ── TOASTS (substituem alert()) ── */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1200; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; pointer-events: none; }
+.toast { pointer-events: auto; min-width: 260px; max-width: 380px; background: var(--dk2); color: #fff; border-radius: var(--rs); padding: 12px 16px; font-size: 13px; line-height: 1.4; box-shadow: 0 8px 24px rgba(0,0,0,.28); display: flex; align-items: flex-start; gap: 10px; border-left: 4px solid var(--og); animation: toast-in .22s ease-out; }
+.toast.leaving { animation: toast-out .22s ease-in forwards; }
+.toast-success { border-left-color: var(--gn); }
+.toast-error { border-left-color: var(--rd); }
+.toast-warning { border-left-color: var(--am); }
+.toast-info { border-left-color: var(--bl); }
+.toast-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.toast-msg { flex: 1; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
+
+/* ── MODAL DE CONFIRMAÇÃO (substitui confirm()) ── */
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.52); backdrop-filter: blur(4px); z-index: 1100; display: flex; align-items: center; justify-content: center; animation: fade-in .15s ease-out; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.confirm-box { background: var(--wh); border-radius: 14px; padding: 30px 32px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.24); text-align: center; }
+.confirm-icon { font-size: 30px; margin-bottom: 10px; }
+.confirm-msg { font-size: 13.5px; color: var(--dk); line-height: 1.55; margin-bottom: 22px; white-space: pre-line; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-btn { flex: 1; height: 40px; border-radius: var(--rs); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .13s; }
+.confirm-btn:hover { opacity: .88; }
+.confirm-cancel { background: var(--g1); color: var(--g5); border: 1.5px solid var(--g2); }
+.confirm-ok { background: var(--og); color: #fff; }
 </style>
 </head>
 <body>
@@ -314,7 +339,47 @@ td.nm{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
   <button class="mbtn" style="width:auto; padding:0 20px; height:34px; margin:0;" onclick="pushSelectedToCart()">Adicionar ao Carrinho</button>
 </div>
 
+<div id="toast-container"></div>
+
 <script>
+// ══════════════════════════════════════════
+//  NOTIFICAÇÕES NÃO-BLOQUEANTES (substituem alert/confirm nativos)
+// ══════════════════════════════════════════
+const TOAST_ICONS = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+
+function showToast(message, type = 'info', duration = 4000) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span class="toast-icon">${TOAST_ICONS[type] || 'ℹ️'}</span><span class="toast-msg">${message}</span>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 220);
+  }, duration);
+}
+
+function showConfirmModal(message, opts = {}) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <div class="confirm-icon">${opts.icon || '⚠️'}</div>
+        <div class="confirm-msg">${message}</div>
+        <div class="confirm-actions">
+          <button class="confirm-btn confirm-cancel">${opts.cancelLabel || 'Cancelar'}</button>
+          <button class="confirm-btn confirm-ok">${opts.okLabel || 'Confirmar'}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const cleanup = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('.confirm-cancel').onclick = () => cleanup(false);
+    overlay.querySelector('.confirm-ok').onclick = () => cleanup(true);
+    overlay.addEventListener('click', e => { if (e.target === overlay) cleanup(false); });
+  });
+}
+
 // ══════════════════════════════════════════
 //  CONFIGURAÇÃO INTEGRAL DE PRODUTIVIDADE
 // ══════════════════════════════════════════
@@ -617,6 +682,18 @@ function grp(arr, key){
 }
 const skeys = (g,by='valorTotal') => Object.keys(g).sort((a,b)=>g[b][by]-g[a][by]);
 
+// Chaves (codigo||local, mesmo formato do uid) de itens que já têm uma
+// solicitação em qualquer status ainda não finalizado. Usado para impedir
+// que o mesmo item seja solicitado duas vezes em paralelo.
+const STATUS_FINAIS = ['Concluída', 'Cancelada'];
+function getChavesEmSolicitacaoAberta(){
+  return new Set(
+    RAW_PENDENTES
+      .filter(i => STATUS_FINAIS.indexOf(i.statusItem) === -1)
+      .map(i => i.codigoItem + '||' + i.local)
+  );
+}
+
 // ── FLUXO DE SINCRONIZAÇÃO SENSÍVEL ───────
 async function loadData(manual=false){
   const btn = document.getElementById('bsync');
@@ -771,16 +848,21 @@ function renderTbl(data){
   
   const isGestor = currentRole === 'gestor';
   const cart = readCartInSession();
+  const chavesAbertas = getChavesEmSolicitacaoAberta();
 
   document.getElementById('tbody').innerHTML = sorted.map(r=>{
     const diasCls = r.diasParado<0 ? '' : r.diasParado>730 ? 'tag-old' : r.diasParado>365 ? 'tag-mid' : 'tag-ok';
-    const isLocked = cart[r.uid] ? 'disabled title="Retido no Carrinho"' : '';
+    const emCarrinho = !!cart[r.uid];
+    const emSolicitacaoAberta = chavesAbertas.has(r.uid);
+    const isLocked = emCarrinho ? 'disabled title="Retido no Carrinho"'
+                    : emSolicitacaoAberta ? 'disabled title="Já possui solicitação em andamento"'
+                    : '';
     const isChecked = itemCheckState[r.uid] ? 'checked' : '';
     
     return '<tr>'
       + (isGestor ? `<td class="chk-col"><input type="checkbox" class="chk-box sub-chk" data-uid="${r.uid}" ${isChecked} ${isLocked} onchange="catchSelection(this)"></td>` : '')
       +'<td style="font-size:11px;color:#888;white-space:nowrap">'+r.codigo+'</td>'
-      +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+'</td>'
+      +'<td title="'+r.produto+'">'+(r.produto.length>44?r.produto.slice(0,43)+'…':r.produto)+(emSolicitacaoAberta&&!emCarrinho?' <span class="bdg" style="background:var(--ogd);color:var(--og)">Em solicitação</span>':'')+'</td>'
       +'<td><span class="bdg">'+r.local+'</span></td>'
       +'<td class="nm">'+fBRL(r.valorUnit)+'</td>'
       +'<td class="nm">'+r.qtd+'</td>'
@@ -810,12 +892,31 @@ function marcarCabecalhoOrdenacao(){
 }
 
 // ══════════════════════════════════════════
-//  PERSISTÊNCIA EM MEMÓRIA VOLÁTIL (CARRINHO)
+//  PERSISTÊNCIA DO CARRINHO (rascunho local do Gestor)
 // ══════════════════════════════════════════
-let INTERNAL_SESSION_CART = {};
+// Guardado em localStorage: é um rascunho pessoal deste navegador/computador,
+// não é dado compartilhado — a solicitação só vira dado compartilhado quando
+// enviada (aí sim vai pra planilha). Isso garante que um F5 acidental, ou o
+// computador dormir entre 08h e 15h, não apague o que o Gestor já separou.
+const CART_STORAGE_KEY = 'ge_obsoletos_carrinho_v1';
 
-function readCartInSession() { return INTERNAL_SESSION_CART; }
-function writeCartInSession(obj) { INTERNAL_SESSION_CART = obj; refreshCartIconBadge(); }
+function readCartInSession() {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.warn('Não foi possível ler o carrinho salvo localmente:', e);
+    return {};
+  }
+}
+function writeCartInSession(obj) {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(obj));
+  } catch (e) {
+    console.warn('Não foi possível salvar o carrinho localmente:', e);
+  }
+  refreshCartIconBadge();
+}
 
 function refreshCartIconBadge() {
   const cart = readCartInSession();
@@ -862,9 +963,12 @@ function refreshFloatBar() {
 
 function pushSelectedToCart() {
   const cart = readCartInSession();
+  const chavesAbertas = getChavesEmSolicitacaoAberta();
+  let bloqueados = 0;
   Object.keys(itemCheckState).forEach(uid => {
     const orig = RAW.find(r => r.uid === uid);
     if (orig && !cart[uid]) {
+      if (chavesAbertas.has(uid)) { bloqueados++; return; }
       cart[uid] = {
         ...orig,
         destinoSelected: 'Venda',
@@ -875,7 +979,11 @@ function pushSelectedToCart() {
   writeCartInSession(cart);
   itemCheckState = {};
   document.getElementById('chk-master').checked = false;
-  alert('🛒 Materiais alocados no Carrinho com sucesso!');
+  if (bloqueados > 0) {
+    showToast(`${bloqueados} item(ns) não foi(ram) adicionado(s) por já ter(em) solicitação em andamento.`, 'warning');
+  } else {
+    showToast('Materiais adicionados ao carrinho.', 'success');
+  }
   applyF();
 }
 
@@ -951,11 +1059,17 @@ async function callAppsScriptAPI(actionName, payloadData) {
     if (!resJson.success) throw new Error(resJson.error || 'Erro interno retornado pelo servidor');
     return resJson;
   } catch(e) {
-    alert('❌ Ocorreu um erro ao persistir as alterações na planilha:\n' + e.message);
+    showToast('Erro ao persistir as alterações na planilha: ' + e.message, 'error', 6000);
     throw e;
   } finally {
     document.getElementById('api-glass').style.display = 'none';
   }
+}
+
+function gerarIdWorkflow(){
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+  return 'WF-' + ts + '-' + rand;
 }
 
 async function dispatchLoteDestinacao() {
@@ -963,12 +1077,16 @@ async function dispatchLoteDestinacao() {
   const list = Object.values(cart);
   
   if (list.length === 0) {
-    alert('❌ Nenhum material disponível para despacho.');
+    showToast('Nenhum material disponível para despacho.', 'warning');
     return;
   }
   
-  if (confirm(`Deseja efetivar o envio deste lote com ${list.length} material(is) para a base de dados da Planilha?`)) {
-    const sId = 'WF-' + Date.now().toString().slice(-6);
+  const ok = await showConfirmModal(
+    `Deseja efetivar o envio deste lote com ${list.length} material(is) para a base de dados da Planilha?`,
+    { icon: '📦', okLabel: 'Enviar Lote' }
+  );
+  if (ok) {
+    const sId = gerarIdWorkflow();
     const dataH = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
     
     const pacoteItens = list.map(m => ({
@@ -988,7 +1106,7 @@ async function dispatchLoteDestinacao() {
     try {
       await callAppsScriptAPI('criarSolicitacao', pacoteItens);
       writeCartInSession({});
-      alert('🚀 Solicitação persistida com sucesso na planilha!');
+      showToast('Solicitação enviada com sucesso!', 'success');
       pacoteItens.forEach(item => RAW_PENDENTES.push({ ...item, obsAdmin: '' }));
       refreshAdminIconBadge();
     } catch(err) {
@@ -1011,12 +1129,19 @@ function switchAdminTab(tabName) {
 // RAW_PENDENTES/RAW_HISTORICO sem depender do CSV publicado já ter atualizado
 // (a publicação do Google Sheets tem um delay de propagação que faria o item
 // "concluído" continuar aparecendo na lista por alguns minutos).
-function aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsAdmin, workflowEncerrado) {
-  const item = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
-  if (item) {
-    item.statusItem = novoStatus;
-    item.obsAdmin = obsAdmin;
-  }
+// Atualização otimista local: aplica o resultado da gravação diretamente em
+// RAW_PENDENTES/RAW_HISTORICO sem depender do CSV publicado já ter atualizado
+// (a publicação do Google Sheets tem um delay de propagação que faria o item
+// "concluído" continuar aparecendo na lista por alguns minutos).
+// Aceita um ou vários itens de uma vez (uso individual e em lote).
+function aplicarAtualizacoesLocaisEmLote(idWorkflow, itensAtualizados, workflowEncerrado) {
+  itensAtualizados.forEach(({ codigoItem, statusItem, obsAdmin }) => {
+    const item = RAW_PENDENTES.find(i => i.idWorkflow === idWorkflow && i.codigoItem === codigoItem);
+    if (item) {
+      item.statusItem = statusItem;
+      item.obsAdmin = obsAdmin;
+    }
+  });
 
   if (workflowEncerrado) {
     const dataConclusao = new Date().toLocaleDateString('pt-BR') + ' ' +
@@ -1034,12 +1159,55 @@ function aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsAd
   renderTab(activeMenu ? activeMenu.dataset.pg : 'visao');
 }
 
+function aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsAdmin, workflowEncerrado) {
+  aplicarAtualizacoesLocaisEmLote(idWorkflow, [{ codigoItem, statusItem: novoStatus, obsAdmin }], workflowEncerrado);
+}
+
+async function aprovarLoteCompleto(idWorkflow) {
+  const itensLote = RAW_PENDENTES.filter(i => i.idWorkflow === idWorkflow);
+  const pendentesReais = itensLote.filter(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
+
+  if (pendentesReais.length === 0) {
+    showToast('Este lote já está totalmente finalizado.', 'info');
+    return;
+  }
+
+  const ok = await showConfirmModal(
+    `Confirma aprovar todos os ${pendentesReais.length} item(ns) pendentes do workflow ${idWorkflow} como "Concluída"?`,
+    { icon: '✅', okLabel: 'Aprovar Lote' }
+  );
+  if (!ok) return;
+
+  const itensPayload = pendentesReais.map(i => ({
+    codigoItem: i.codigoItem,
+    statusItem: 'Concluída',
+    obsAdmin: (i.obsAdmin && i.obsAdmin !== '—') ? i.obsAdmin : 'Aprovação em lote'
+  }));
+
+  try {
+    const resultado = await callAppsScriptAPI('finalizarLote', { idWorkflow, itens: itensPayload });
+    aplicarAtualizacoesLocaisEmLote(idWorkflow, itensPayload, resultado.workflowEncerrado);
+    showToast(
+      resultado.workflowEncerrado
+        ? `Workflow ${idWorkflow} finalizado e migrado para o Histórico.`
+        : `${itensPayload.length} item(ns) aprovado(s).`,
+      'success'
+    );
+  } catch(e) {
+    console.error(e);
+  }
+}
+
 async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
   const uniqueKey = `${idWorkflow}-${codigoItem}`;
   const obsText = document.getElementById(`obs-admin-${uniqueKey}`).value.trim() || '—';
   
   if (novoStatus === 'Concluída' || novoStatus === 'Cancelada') {
-    if (!confirm(`Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`)) {
+    const ok = await showConfirmModal(
+      `Confirma o encerramento do item ${codigoItem} para o status [${novoStatus}]?`,
+      { icon: novoStatus === 'Concluída' ? '✅' : '🚫', okLabel: 'Confirmar' }
+    );
+    if (!ok) {
       renderMóduloSolicitacoes(); // desfaz visualmente a troca do <select>, sem refetch
       return;
     }
@@ -1054,9 +1222,9 @@ async function submeterAlteracaoStatusItem(idWorkflow, codigoItem, novoStatus) {
     });
     
     if (resultado.workflowEncerrado) {
-      alert(`🎯 Workflow ${idWorkflow} finalizado! Todos os itens foram respondidos e o bloco foi migrado para o Histórico.`);
+      showToast(`Workflow ${idWorkflow} finalizado e migrado para o Histórico.`, 'success');
     } else {
-      alert(`⚡ Status do item ${codigoItem} updated na planilha.`);
+      showToast(`Status do item ${codigoItem} atualizado.`, 'success');
     }
     aplicarAtualizacaoLocalStatus(idWorkflow, codigoItem, novoStatus, obsText, resultado.workflowEncerrado);
   } catch(e) {
@@ -1133,6 +1301,10 @@ function renderMóduloSolicitacoes() {
     }).join('');
 
     const subInfo = wf.dataConclusao ? ` | Finalizado em: <b>${wf.dataConclusao}</b>` : '';
+    const pendentesNoLote = wf.itens.filter(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada').length;
+    const botaoLote = (currentAdminViewTab === 'pendentes' && pendentesNoLote > 1)
+      ? `<button class="btn-clr" style="height:30px;padding:0 14px;font-size:12px" onclick="aprovarLoteCompleto('${wf.idWorkflow}')">✓ Aprovar Lote (${pendentesNoLote})</button>`
+      : '';
 
     return `
       <div class="sol-block">
@@ -1141,6 +1313,7 @@ function renderMóduloSolicitacoes() {
             <div style="font-size:14px; font-weight:700; color:var(--dk)">Workflow ID: ${wf.idWorkflow}</div>
             <div style="font-size:11px; color:var(--g4); margin-top:2px">Solicitante: <b>${wf.solicitante}</b> | Enviado em: ${wf.dataSolicitacao}${subInfo}</div>
           </div>
+          ${botaoLote}
         </div>
         <div style="overflow-x:auto">
           <table style="min-width:100%; font-size:11px;">
@@ -1185,7 +1358,11 @@ function executarVerificacaoInteligenteEstoque() {
     
     if (todosSumiram && loteAindaAtivo) {
       setTimeout(async () => {
-        if (confirm(`📊 [Análise Inteligente de Sincronização]\n\nDetectamos que todos os itens pertencentes à solicitação "${idWf}" não existem mais na base ativa de estoque obsoleto.\n\nDeseja marcar automaticamente este lote como "Concluído" no sistema?`)) {
+        const ok = await showConfirmModal(
+          `[Análise Inteligente de Sincronização]\n\nDetectamos que todos os itens pertencentes à solicitação "${idWf}" não existem mais na base ativa de estoque obsoleto.\n\nDeseja marcar automaticamente este lote como "Concluído" no sistema?`,
+          { icon: '📊', okLabel: 'Marcar como Concluído' }
+        );
+        if (ok) {
           const primeiroPendente = itensLote.find(i => i.statusItem !== 'Concluída' && i.statusItem !== 'Cancelada');
           if (primeiroPendente) {
             try {
@@ -1198,7 +1375,7 @@ function executarVerificacaoInteligenteEstoque() {
               aplicarAtualizacaoLocalStatus(idWf, primeiroPendente.codigoItem, 'Concluída',
                 'Baixa automática gerada por validação assistida de estoque vazio.', resultado.workflowEncerrado);
               if (resultado.workflowEncerrado) {
-                alert(`🎯 Workflow ${idWf} arquivado com sucesso no Histórico.`);
+                showToast(`Workflow ${idWf} arquivado no Histórico.`, 'success');
               }
             } catch(e) { console.error(e); }
           }
